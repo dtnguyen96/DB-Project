@@ -41,15 +41,11 @@
 								<div class="form-checkbox">
 									<label for="roundtrip">
 										<input type="radio" id="roundtrip" name="flight-type">
-										<span></span>Roundtrip
+										<span></span>Direct
 									</label>
 									<label for="one-way">
 										<input type="radio" id="one-way" name="flight-type">
-										<span></span>One way
-									</label>
-									<label for="multi-city">
-										<input type="radio" id="multi-city" name="flight-type">
-										<span></span>Multi-City
+										<span></span>Indirect
 									</label>
 								</div>
 							</div>
@@ -64,13 +60,13 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
-										<input class="form-control" type="date">
+										<input class="form-control" type="datetime-local">
 										<span class="form-label">Departure</span>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<input class="form-control" type="date">
+										<input class="form-control" type="datetime-local">
 										<span class="form-label">Arrival</span>
 									</div>
 								</div>
@@ -81,7 +77,6 @@
 										<select class="form-control">
 											<option>Economy class</option>
 											<option>Business class</option>
-											<option>First class</option>
 										</select>
 										<span class="select-arrow"></span>
 										<span class="form-label">Travel class</span>
