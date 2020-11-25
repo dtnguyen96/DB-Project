@@ -19,11 +19,39 @@ async function fetchFlights() {
         child_cnt]
 
     try {
-        const body = {description: flight_info};
-        const response = await fetch('http://localhost:5000/flights', {
-            method: "POST",
+        // const body = {description: flight_info};
+        const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}`, {
+            method: "GET",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(body)
         })
+        loadFlights(flight_info);
+        return false;
     } catch (err) { console.log(err.message);}
+}
+
+const setFlights = (data) => {
+    console.log("This is the data returned: " + data);
+    flight_info_storage = data;
+}
+
+async function loadFlights(flight_info) {
+    try{
+        const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}`);
+        const jsonData = await response.json();
+
+        setFlights(jsonData);
+        displayFlights();
+        // console.log(flight_info_storage)
+        return false;
+    } catch (err){ console.log(err.message);}
+}
+
+const displayFlights = () => {
+    const flight_table = document.getElementById('table_display');
+
+    let tableHTML = "";
+    flight_info_storage.map(f_table => {
+        tableHTML += `<div>${f_table.flight_id}</div>`;
+    });
+    flight_table.innerHTML = tableHTML;
 }

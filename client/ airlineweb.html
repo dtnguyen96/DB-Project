@@ -7,6 +7,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
+	<!--Jquery-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
 	<title>Booking Form HTML Template</title>
 
 	<!-- Google font -->
@@ -27,7 +31,24 @@
 
 </head>
 
+<script type="text/javascript">
+	$(document).ready(function()
+	{
+		$("button").click(function () {
+			$("#booking").animate({ right: '100%'}, 'slow');
+			$('#flight_results').animate({left: '50%'}, 1500);
+		});
+	});
+</script>
+
 <body>
+	<div id="flight_results">
+		<div class="title_display">Available Flights</div>
+		<div id="table_display"></div>
+	</div>
+
+
+
 	<div id="booking" class="section">
 		<div class="section-center">
 			<div class="container">
@@ -36,7 +57,7 @@
 						<div class="form-header">
 							<h1>Book Your Flight</h1>
 						</div>
-						<form>
+						<form onsubmit="return false">
 							<div class="form-group">
 								<div class="form-checkbox">
 									<label for="roundtrip">
@@ -50,23 +71,23 @@
 								</div>
 							</div>
 							<div class="form-group">
-								<input class="form-control" type="text">
+								<input class="form-control" type="text" id='flying_from'>
 								<span class="form-label">Flying from</span>
 							</div>
 							<div class="form-group">
-								<input class="form-control" type="text">
+								<input class="form-control" type="text" id='flying_to'>
 								<span class="form-label">Flying to</span>
 							</div>
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
-										<input class="form-control" type="datetime-local">
+										<input class="form-control" type="datetime-local" id="depature_time">
 										<span class="form-label">Departure</span>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<input class="form-control" type="datetime-local">
+										<input class="form-control" type="datetime-local" id="arrival_time">
 										<span class="form-label">Arrival</span>
 									</div>
 								</div>
@@ -74,7 +95,7 @@
 							<div class="row">
 								<div class="col-md-4">
 									<div class="form-group">
-										<select class="form-control">
+										<select class="form-control" id="fare_condition">
 											<option>Economy class</option>
 											<option>Business class</option>
 										</select>
@@ -84,7 +105,7 @@
 								</div>
 								<div class="col-md-4">
 									<div class="form-group">
-										<select class="form-control">
+										<select class="form-control" id="adult_cnt">
 											<option>1</option>
 											<option>2</option>
 											<option>3</option>
@@ -95,7 +116,7 @@
 								</div>
 								<div class="col-md-4">
 									<div class="form-group">
-										<select class="form-control">
+										<select class="form-control" id="child_cnt">
 											<option>0</option>
 											<option>1</option>
 											<option>2</option>
@@ -106,7 +127,7 @@
 								</div>
 							</div>
 							<div class="form-btn">
-								<button class="submit-btn">Check availability</button>
+								<button class="submit-btn" onclick="fetchFlights()">Check availability</button>
 							</div>
 						</form>
 					</div>
@@ -137,4 +158,5 @@
 
 </body><!-- This templates was made by Colorlib (https://colorlib.com) -->
 
+<script src="script.js"></script>
 </html>

@@ -177,3 +177,17 @@
 	border: none;
 	padding: 0px 50px;
 }
+
+div#flight_results {
+    width: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    text-align: center;
+    left: 200%;
+}
+
+.title_display {
+    background-color: black;
+    color: white;
+}
