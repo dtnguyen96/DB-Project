@@ -185,9 +185,39 @@ div#flight_results {
     position: absolute;
     text-align: center;
     left: 200%;
+    font-family: Montserrat, sans-serif;
+    border: 1px solid lightgray;
 }
 
 .title_display {
-    background-color: black;
+    background-color: rgb(26, 31, 36);
     color: white;
+    padding: 40px;
+    font-size: xx-large;
+    margin-bottom: 2%;
+    font-weight: bolder;
+}
+
+table#table_display {
+    font-weight: normal;
+    margin: 2%;
+}
+
+table#table_display th {
+	padding-left: 2%;
+	padding-bottom: 2%;
+}
+
+table#table_display .submit-btn {
+    color: #1c2126;
+    background-color: #f7c411;
+    font-weight: 700;
+    height: 50px;
+    border: none;
+    padding: 0px 50px;
+}
+
+.back_button {
+	position: absolute;
+	left: 0%;
 }

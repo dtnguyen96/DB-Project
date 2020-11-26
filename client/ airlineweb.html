@@ -34,17 +34,26 @@
 <script type="text/javascript">
 	$(document).ready(function()
 	{
-		$("button").click(function () {
+		$("#check_flights_btn").click(function () {
 			$("#booking").animate({ right: '100%'}, 'slow');
 			$('#flight_results').animate({left: '50%'}, 1500);
+		});
+	});
+
+	$(document).ready(function()
+	{
+		$("#flight_back_btn").click(function () {
+			$("#flight_results").animate({ left: '200%'}, 'slow');
+			$('#booking').animate({left: '50%'}, 1500);
 		});
 	});
 </script>
 
 <body>
 	<div id="flight_results">
+		<button class='back_button' id='flight_back_btn'>Back</button>
 		<div class="title_display">Available Flights</div>
-		<div id="table_display"></div>
+		<table id="table_display"></table>
 	</div>
 
 
@@ -127,7 +136,7 @@
 								</div>
 							</div>
 							<div class="form-btn">
-								<button class="submit-btn" onclick="fetchFlights()">Check availability</button>
+								<button class="submit-btn" id = 'check_flights_btn' onclick="fetchFlights()">Check availability</button>
 							</div>
 						</form>
 					</div>
