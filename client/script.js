@@ -69,3 +69,17 @@ const displayFlights = () => {
     });
     flight_table.innerHTML = tableHTML;
 }
+
+var container = document.getElementById('container_slide');
+var next = document.getElementById('check_flights_btn');
+var prev = document.getElementById('flight_back_btn');
+
+next.onclick = function(event){
+    fetchFlights();
+    container.classList.add("next");
+}
+
+prev.onclick = function(event){
+    container.classList.remove("next");
+    document.getElementById("table_display").innerHTML = "";
+}

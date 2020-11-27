@@ -20,20 +20,7 @@ app.get('/flights', async(req, res)=>{
 
     console.log("d_loc: " + d_loc.length + "a_loc: " + a_loc.length + "d_time: " + d_time.length + "a_time: " + a_time.length + " ");
 
-    console.log(
-    `SELECT 
-      flight_id, 
-      scheduled_depature, 
-      scheduled_arrival, 
-      departure_airport, 
-      arrival_airport, 
-      direct_flight, 
-      movie, 
-      meal 
-        FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-          AND
-        arrival_airport = ` + `'` + a_loc + `'`
-    );
+
     
     if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time)){
       var new_flightList = await pool.query(
@@ -46,8 +33,22 @@ app.get('/flights', async(req, res)=>{
           movie, 
           meal 
             FROM flights`);
-    } else if (){}
     
+      console.log(
+        `SELECT 
+          flight_id, 
+          scheduled_depature, 
+          scheduled_arrival, 
+          departure_airport, 
+          arrival_airport, 
+          direct_flight, 
+          movie, 
+          meal 
+            FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
+              AND
+            arrival_airport = ` + `'` + a_loc + `'`
+        );
+    }
     else{
       var new_flightList = await pool.query(
         `SELECT flight_id, 
@@ -65,6 +66,22 @@ app.get('/flights', async(req, res)=>{
             scheduled_departure >= ` + `'` + d_time + `'
               AND
             scheduled_arrival <= ` + `'` + a_time + `'`);
+        
+        console.log(`SELECT flight_id, 
+        scheduled_departure, 
+        scheduled_arrival, 
+        departure_airport, 
+        arrival_airport, 
+        direct_flight, 
+        movie, 
+        meal 
+          FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
+            AND
+          arrival_airport = ` + `'` + a_loc + `'
+            AND
+          scheduled_departure >= ` + `'` + d_time + `'
+            AND
+          scheduled_arrival <= ` + `'` + a_time + `'`);
     }
 
     res.json(new_flightList.rows);
