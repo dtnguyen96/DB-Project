@@ -7,10 +7,10 @@ const Pool = require('pg').Pool;
 
 const pool = new Pool({
   host: 'code.cs.uh.edu',
-  user:
-  password:
-  port:
-  database:
+  user: 'cosc0130',
+  password: '1592215BN',
+  port: 5432,
+  database: 'COSC3380'
 });
 
 module.exports = pool;

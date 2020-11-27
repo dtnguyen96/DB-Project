@@ -46,7 +46,7 @@ app.get('/flights', async(req, res)=>{
           movie, 
           meal 
             FROM flights`);
-    } else if (){}
+    } 
     
     else{
       var new_flightList = await pool.query(
