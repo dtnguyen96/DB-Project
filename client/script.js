@@ -13,24 +13,60 @@ async function fetchFlights() {
 
     var roundtrip = '';
 
-    if (document.getElementById('one-way').checked === true){ roundtrip = '1';}
-    if (document.getElementById('roundtrip').cheked === true){ roundtrip = '0';}
+    if (document.getElementById('one-way').checked === true) { roundtrip = '1'; }
+    if (document.getElementById('roundtrip').cheked === true) { roundtrip = '0'; }
 
-    const flight_info = 
+    const flight_info =
         [depature_location,
-        arrival_location,
-        depature_time,
-        arrival_time,
-        fare_condition,
-        adult_cnt,
-        child_cnt,
-        roundtrip
-    ]
+            arrival_location,
+            depature_time,
+            arrival_time,
+            fare_condition,
+            adult_cnt,
+            child_cnt,
+            roundtrip
+        ]
 
     try {
-        loadFlights(flight_info, "");
+       loadFlights(flight_info, "");
+       return false;
+    } catch (err) { console.log(err.message); }
+    
+}
+
+
+async function fetchPayment() {
+    var fullName = document.getElementById('fname').value;
+    var email = document.getElementById('email').value;
+    var adult_cnt = document.getElementById('adult_cnt').value;
+    var child_cnt = document.getElementById('child_cnt').value;
+    var cardNum = document.getElementById('ccnum').value;
+    var ticket_cnt = adult_cnt + child_cnt;
+    var total_amount = document.getElementById('total-amount').value;
+    var phoneNumber = document.getElementById('phone').value;
+    var tax = document.getElementById('tax-display').value;
+    var groupTravel = false;
+    if (ticket_cnt > 1){
+        groupTravel=true;
+    }
+    const payment_info=[
+        fullName,
+        email,
+        cardNum,
+        total_amount,
+        phoneNumber,
+        tax,
+        groupTravel
+    ]
+    console.log(payment_info);
+    try{
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        })
         return false;
-    } catch (err) { console.log(err.message);}
+    } catch (err) { console.log(err.message); }
+    
 }
 
 const setFlights = (data) => {
@@ -48,7 +84,7 @@ async function loadFlights(flight_info, type) {
         else {displayFlightsAdmin();}
 
         return false;
-    } catch (err){ console.log(err.message);}
+    } catch (err) { console.log(err.message); }
 }
 
 const displayFlightsAdmin = () => {
@@ -74,19 +110,19 @@ const displayFlights = () => {
     const flight_table = document.getElementById('table_display');
 
     let tableHTML = "";
-    if (flight_info_storage.length === 0){console.log('zerooo');}
+    if (flight_info_storage.length === 0) { console.log('zerooo'); }
     flight_info_storage.map(f_table => {
         var movie_bool = "Yes";
         var meal_bool = "Yes";
         var direct_flight = "Yes";
 
-        if (f_table.movie === '0'){ movie_bool = "No";}
-        if (f_table.meal === '0'){ meal_bool = "No";}
-        if (f_table.direct_flight === '0'){ direct_flight = "No";}
+        if (f_table.movie === '0') { movie_bool = "No"; }
+        if (f_table.meal === '0') { meal_bool = "No"; }
+        if (f_table.direct_flight === '0') { direct_flight = "No"; }
 
 
-        tableHTML += 
-        `<tr>
+        tableHTML +=
+            `<tr>
             <th>${f_table.flight_id}</th>
             <th>${f_table.departure_airport} TO ${f_table.arrival_airport}</th>
             <th>${f_table.scheduled_departure} TO ${f_table.scheduled_arrival}</th>
@@ -97,7 +133,7 @@ const displayFlights = () => {
         </tr>`;
     });
     flight_table.innerHTML += tableHTML;
-    if (flight_table.innerHTML == 
+    if (flight_table.innerHTML ==
         `<tbody><tr>
         <th>Flight</th>
         <th>Flight Route</th>
@@ -106,7 +142,7 @@ const displayFlights = () => {
         <th>Meal(s)</th>
         <th>Direct Flight</th> 
     </tr>
-</tbody>`){ document.getElementById('error-msg').innerHTML = 'Bad input received!';}
+</tbody>`) { document.getElementById('error-msg').innerHTML = 'Bad input received!'; }
 }
 
 var container = document.getElementById('container_slide');
@@ -120,25 +156,27 @@ var html_obj = document.getElementById("html_tag");
 var admin_btn = document.getElementById('submit-admin-btn');
 var admin_back_btn = document.getElementById('btn-admin-back');
 
-next.onclick = function(event){
+var paymentSubmit=document.getElementById('payment-submit');
+
+next.onclick = function (event) {
     fetchFlights();
     container.classList.add("next");
 }
 
-function slide_function(){
+function slide_function() {
     container.classList.add("pay");
     body.style.overflow = "inherit";
     html_obj.style.overflow = "inherit";
-    
+
 }
 
-back_list.onclick = function(event){
+back_list.onclick = function (event) {
     body.style.overflow = "hidden";
     html_obj.style.overflow = "hidden";
     container.classList.remove("pay");
 }
 
-prev.onclick = function(event){
+prev.onclick = function (event) {
     container.classList.remove("next");
     document.getElementById("table_display").innerHTML = `<tr>
     <th>Flight</th>
@@ -149,6 +187,9 @@ prev.onclick = function(event){
     <th>Direct Flight</th>
 </tr>`;
     document.getElementById('error-msg').innerHTML = '';
+}
+paymentSubmit.onclick=function(event){
+    fetchPayment();
 }
 
 admin_btn.onclick = function(){

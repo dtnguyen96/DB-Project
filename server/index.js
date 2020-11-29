@@ -8,8 +8,10 @@ app.use(cors());
 app.use(express.json());      //req.body
 
 //ROUTES
+// 
 app.get('/flights', async(req, res)=>{
   try{
+    //these are the input from users
     var d_loc = req.param('dloc');
     var a_loc = req.param('aloc');
     
@@ -105,7 +107,6 @@ app.get('/flights', async(req, res)=>{
     console.log(new_flightList.rows);
   } catch(err){ console.log(err.message);}
 });
-
 app.listen(5000, ()=>{
   console.log("server has started on port 5000");
 });

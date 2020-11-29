@@ -164,7 +164,7 @@
 			<button id="back_button2">Back</button>
 			<div class="col-75">
 			  <div class="container2">
-				<form action="/action_page.php">
+				<form action="http://localhost:5000/flights/">
 		  
 				  <div class="row2">
 					<div class="col-50">
@@ -173,6 +173,9 @@
 					  <input type="text" id="fname" name="firstname" placeholder="John M. Doe">
 					  <label for="email"><i class="fa fa-envelope"></i> Email</label>
 					  <input type="text" id="email" name="email" placeholder="john@example.com">
+					  <br>
+					  <label for="phone"><i class="fa fa-envelope"></i> Phone</label>
+					  <input type="text" id="phone" name="phone" placeholder="xxx-xxxx-xxxx">
 					  <br>
 					  <label for="adr"><i class="fa fa-address-card-o"></i> Address</label>
 					  <input type="text" id="adr" name="address" placeholder="542 W. 15th Street">
@@ -224,7 +227,7 @@
 				  <label>
 					<input type="checkbox" checked="checked" name="sameadr"> Shipping address same as billing
 				  </label>
-				  <input type="submit" value="Continue to checkout" class="btn">
+				  <input type="submit" id="payment-submit" value="Continue to checkout" class="btn">
 				</form>
 			  </div>
 			</div>
@@ -243,7 +246,7 @@
 				<p><a href="#">Product 4</a> <span class="price">$2</span></p>
 				<p id='tax-display'>Tax $4.52</p>
 				<hr>
-				<p>Total <span class="price" style="color:black"><b>$30</b></span></p>
+				<p>Total <span class="price" style="color:black" id="total-amount"><b>$30</b></span></p>
 			  </div>
 			</div>
 		  </div>	
