@@ -1,4 +1,6 @@
 let flight_info_storage = []
+let admin_pass = ""
+let admin_generate = false;
 
 async function fetchFlights() {
     var depature_location = document.getElementById('flying_from').value;
@@ -26,12 +28,7 @@ async function fetchFlights() {
     ]
 
     try {
-        // const body = {description: flight_info};
-        const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}&aloc=${flight_info[1]}&dtime=${flight_info[2]}&atime=${flight_info[3]}&f_cond=${flight_info[4]}&a_cnt=${flight_info[5]}&c_cnt=${flight_info[6]}&round=${flight_info[7]}`, {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-        loadFlights(flight_info);
+        loadFlights(flight_info, "");
         return false;
     } catch (err) { console.log(err.message);}
 }
@@ -41,16 +38,36 @@ const setFlights = (data) => {
     flight_info_storage = data;
 }
 
-async function loadFlights(flight_info) {
+async function loadFlights(flight_info, type) {
     try{
         const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}&aloc=${flight_info[1]}&dtime=${flight_info[2]}&atime=${flight_info[3]}&f_cond=${flight_info[4]}&a_cnt=${flight_info[5]}&c_cnt=${flight_info[6]}&round=${flight_info[7]}`);
         const jsonData = await response.json();
 
         setFlights(jsonData);
-        displayFlights();
+        if (type != "admin"){displayFlights();}
+        else {displayFlightsAdmin();}
 
         return false;
     } catch (err){ console.log(err.message);}
+}
+
+const displayFlightsAdmin = () => {
+    const flight_table = document.getElementById('list');
+
+    let btnHTML = "";
+    if (!admin_generate)
+    {
+        flight_info_storage.map(f_table => {
+            btnHTML += 
+            `<button class='submit-btn'>
+                <div>${f_table.flight_id}</div>
+                <div>${f_table.departure_airport} TO ${f_table.arrival_airport}</div>
+            </button>
+            `
+        });
+        flight_table.innerHTML += btnHTML;
+        admin_generate = true;
+    }
 }
 
 const displayFlights = () => {
@@ -99,7 +116,10 @@ var back_list = document.getElementById('back_button2');
 
 var body = document.getElementById("body_tag");
 var html_obj = document.getElementById("html_tag");
-    
+
+var admin_btn = document.getElementById('submit-admin-btn');
+var admin_back_btn = document.getElementById('btn-admin-back');
+
 next.onclick = function(event){
     fetchFlights();
     container.classList.add("next");
@@ -131,4 +151,31 @@ prev.onclick = function(event){
     document.getElementById('error-msg').innerHTML = '';
 }
 
-// function change_checked_val_1(){document.getElementById('')}
+admin_btn.onclick = function(){
+    var userinput = document.getElementById('loginform').value;
+    
+    if (userinput === "123" || admin_pass === "123")
+    {
+        admin_pass = userinput;
+        generate_flight_button();
+        container.classList.add("admin");
+    }
+}
+
+admin_back_btn.onclick = function(){
+    container.classList.remove("admin");
+}
+
+function generate_flight_button(){
+    const flight_info = 
+        ["",
+        "",
+        "",
+        "",
+        "",
+        0,
+        0,
+        ""
+        ]
+    loadFlights(flight_info, "admin");
+}

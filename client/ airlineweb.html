@@ -54,6 +54,10 @@
 		<div class="section-center">
 			<div class="container">
 				<div class="row">
+					<div id="admincontainer">
+						<input type="text" id="loginform"><button id="submit-admin-btn">Admin</button>
+					</div>
+
 					<div class="booking-form" id='booking_block'>
 						<div class="form-header">
 							<h1>Book Your Flight</h1>
@@ -245,8 +249,28 @@
 		  </div>	
 	</div>
 
-
-
+	<div id='admin-page'>
+		<div id='admin-dashb'>
+			<div id='top'>
+	
+			  <div id='list'>
+			  </div>
+	
+			  <div id='result-display'>
+			  </div>
+			</div>
+		  <div id='bottom'>
+			<div class='btn'>
+				<button class='btn-admin' id='delete-btn'>Delete</button>
+				<input type='text'>
+			  </div>
+			  <div class='btn'>
+				<button class='btn-admin' id='refund-btn'>Refund Booking</button>
+				<input type='text'>
+			  </div>
+			  <button id='btn-admin-back'>Back</button>
+		  </div>
+	</div>
 
 	<script src="js/jquery.min.js"></script>
 	<script>

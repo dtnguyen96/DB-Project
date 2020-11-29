@@ -20,7 +20,7 @@ body, html {
 #booking {
     font-family: 'Montserrat', sans-serif;
     width: 33.3333333%;
-    height: 100%;
+    height: 50%;
 }
 
 .booking-form {
@@ -186,11 +186,12 @@ body, html {
 }
 
 #container_slide {
-	height: 100%;
+	height: 200%;
 	width: 300%;
 	position: absolute;
 	transition: 1000ms;
 	left: 0;
+	top: 0;
 }
 
 #container_slide.next {
@@ -201,12 +202,15 @@ body, html {
 	left: -200%;
 }
 
+#container_slide.admin {
+	top: -100%;
+}
+
 div#flight_results {
     width: 33.3333333%;
-    height: 100%;
+    height: 50%;
     text-align: center;
     font-family: Montserrat, sans-serif;
-    /* float: right; */
     position: absolute;
     top: 0;
     right: 34%;
@@ -223,7 +227,7 @@ div#payment_page {
     position: absolute;
     top: 0;
     right: 1%;
-    height: 100%;
+    height: 50%;
     margin: 0;
 }
 
@@ -276,12 +280,8 @@ table#table_display .submit-btn {
 }
 
 #result_container {
-    /* position: absolute; */
     background-color: white;
     width: 75%;
-    /* top: 50%; */
-    /* left: 150%; */
-    /* margin: auto; */
     transform: translate(25%, 50%);
     border: 1px solid lightgrey;
 }
@@ -300,7 +300,6 @@ button#flight_back_btn {
     padding: 3%;
     border: 0.5px solid black;
     background-color: white;
-    /* color: white; */
     transform: translate(40%, 10%);
 }
 
@@ -318,7 +317,6 @@ label {
     font-family: 'Montserrat', sans-serif;
     display: inline-block;
     max-width: 100%;
-    /* margin-bottom: 5px; */
     font-weight: 700;
     padding-right: 1%;
 }
@@ -346,4 +344,103 @@ button#back_button2 {
     box-shadow: none;
     border: none;
     width: 10%;
+}
+
+#list {
+    height: 100%;
+    width: max-content;
+    margin-right: 0;
+    float: left;
+    background-color: #293037;
+	border: none;
+	overflow-y: auto;
+    overflow-x: hidden;
+}
+  
+  #list button {
+  display: block;
+  margin: 0;
+  }
+  
+  #top {
+    height: 90%;
+    width: 100%;
+}
+  
+#bottom {
+    margin-top: 3%;
+    height: 10%;
+}
+  
+  #admin-page{
+	font-family: Montserrat, sans-serif;
+    width: 34%;
+    height: 50%;
+  }
+
+  #admin-dashb {
+    width: 60%;
+    transform: translateY(25%);
+    margin: auto;
+    top: 50%;
+    background-color: rgb(26, 31, 36);
+    height: 67%;
+    padding: 2%;
+}
+
+#list .submit-btn {
+    color: #1c2126;
+    background-color: #f7c411;
+    font-weight: 700;
+    height: 50px;
+    border: none;
+	padding: 0px 50px;
+	width: 100%;
+}
+
+div#result-display {
+    float: right;
+    height: 100%;
+    width: 65%;
+    background-color: white;
+}
+
+#delete-btn{
+	background-color: red;
+	color: white;
+	border: none;
+}
+
+#refund-btn{
+	background-color: green;
+	color: white;
+	border: none;
+}
+
+div#admincontainer {
+    margin: auto;
+    position: relative;
+    width: min-content;
+    padding-bottom: 2%;
+}
+
+button#submit-admin-btn {
+    padding: 4%;
+    position: relative;
+    border: none;
+    background-color: red;
+    transform: translateX(95%);
+    font-weight: bold;
+}
+
+#loginform{
+	margin-bottom: 5%;
+}
+
+#btn-admin-back {
+	border: none;
+	background-color: crimson;
+	color: white;
+	float: right;
+	width: max-content;
 }

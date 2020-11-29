@@ -24,6 +24,7 @@ app.get('/flights', async(req, res)=>{
     var round = req.param('round');
 
     var total_ticket_cnt = a_cnt + c_cnt;
+    console.log(total_ticket_cnt);
 
     // console.log("d_loc: " + d_loc.length + "a_loc: " + a_loc.length + "d_time: " + d_time.length + "a_time: " + a_time.length + " ");
 
