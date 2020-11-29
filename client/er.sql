@@ -49,6 +49,8 @@ CREATE TABLE flights (
     STATUS character varying(20) NOT NULL,
     aircraft_code character(3) NOT NULL,
     seats_available integer NOT NULL,
+    seats_avail_econ integer NOT NULL,
+    seats_avail_business integer NOT NULL,
     seats_booked integer NOT NULL,
     actual_depature timestamp WITH time zone,
     actual_arrival timestamp WITH time zone,

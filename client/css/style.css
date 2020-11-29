@@ -19,8 +19,8 @@ body, html {
 
 #booking {
     font-family: 'Montserrat', sans-serif;
-    width: 50%;
-    /* background-color: blue; */
+    width: 33.3333333%;
+    height: 100%;
 }
 
 .booking-form {
@@ -187,7 +187,7 @@ body, html {
 
 #container_slide {
 	height: 100%;
-	width: 200%;
+	width: 300%;
 	position: absolute;
 	transition: 1000ms;
 	left: 0;
@@ -197,13 +197,34 @@ body, html {
 	left: -100%;
 }
 
+#container_slide.next.pay{
+	left: -200%;
+}
+
 div#flight_results {
-    width: 50%;
+    width: 33.3333333%;
     height: 100%;
     text-align: center;
     font-family: Montserrat, sans-serif;
-    /* background-color: red; */
-    float: right;
+    /* float: right; */
+    position: absolute;
+    top: 0;
+    right: 34%;
+}
+
+div#error-msg {
+    padding: 2%;
+    color: red;
+    text-align: center;
+}
+
+div#payment_page {
+    width: 33.3333333%;
+    position: absolute;
+    top: 0;
+    right: 1%;
+    height: 100%;
+    margin: 0;
 }
 
 #hide_content {
@@ -213,6 +234,11 @@ div#flight_results {
     width: 100%;
     height: 100%;
     overflow: hidden;  
+}
+
+h3 {
+    border-bottom: 1px solid lightgrey;
+    padding-bottom: 1%;
 }
 
 .title_display {
@@ -266,4 +292,58 @@ button#flight_back_btn {
     font-weight: inherit;
     width: 10%;
     height: 20%;
+}
+
+#payment{
+	width: 50%;
+	height: max-content;
+    padding: 3%;
+    border: 0.5px solid black;
+    background-color: white;
+    /* color: white; */
+    transform: translate(40%, 10%);
+}
+
+input.btn {
+	text-align: center;
+    color: #1c2126;
+    background-color: #f7c411;
+    font-weight: 700;
+	height: 30px;
+    border: none;
+    padding: 0px 50px;
+}
+
+label {
+    font-family: 'Montserrat', sans-serif;
+    display: inline-block;
+    max-width: 100%;
+    /* margin-bottom: 5px; */
+    font-weight: 700;
+    padding-right: 1%;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    margin-right: 1%;
+    margin-bottom: 1.5%;
+}
+
+.submit-btn_submit{
+	color: #1c2126;
+    background-color: #f7c411;
+    font-weight: 700;
+    height: 50px;
+    border: none;
+    padding: 0px 50px;
+}
+
+button#back_button2 {
+    background-color: #333;
+    color: white;
+    box-shadow: none;
+    border: none;
+    width: 10%;
 }
