@@ -1,4 +1,11 @@
 let flight_info_storage = []
+
+let adult_count = 0
+let child_count = 0
+
+let adult_cost = 100
+let child_cost = 60
+
 let admin_pass = ""
 let admin_generate = false;
 
@@ -10,6 +17,11 @@ async function fetchFlights() {
     var fare_condition = document.getElementById('fare_condition').value;
     var adult_cnt = document.getElementById('adult_cnt').value;
     var child_cnt = document.getElementById('child_cnt').value;
+
+    adult_count = adult_cnt;
+    child_count = child_cnt;
+
+    console.log(adult_count, child_count)
 
     var roundtrip = '';
 
@@ -46,6 +58,7 @@ async function fetchPayment() {
     var phoneNumber = document.getElementById('phone').value;
     var tax = document.getElementById('tax-display').value;
     var groupTravel = false;
+
     if (ticket_cnt > 1){
         groupTravel=true;
     }
@@ -145,6 +158,20 @@ const displayFlights = () => {
 </tbody>`) { document.getElementById('error-msg').innerHTML = 'Bad input received!'; }
 }
 
+const displayCart = () => {
+    var cart = document.getElementById("cart-description");
+    var total_price = document.getElementById("total-amount");
+
+    let cartHTML =  "";
+    
+    if (adult_count > 0) { cartHTML += `<p><a href="#">Adult ticket x${adult_count}</a> <span class="price">$${adult_count*adult_cost}</span></p>`}
+    if (child_count > 0) { cartHTML += `<p><a href="#">Children ticket x${child_count}</a> <span class="price">$${child_count*child_cost}</span></p>`}
+    cartHTML += `<p id='tax-display'>Tax $${((adult_count*adult_cost + child_count*child_cost)*0.30).toFixed(2)}</p>`
+    if (adult_count + child_count > 0) {cart.innerHTML = cartHTML;}
+
+    total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`
+}
+
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
 var prev = document.getElementById('flight_back_btn');
@@ -164,6 +191,7 @@ next.onclick = function (event) {
 }
 
 function slide_function() {
+    displayCart();
     container.classList.add("pay");
     body.style.overflow = "inherit";
     html_obj.style.overflow = "inherit";
@@ -189,6 +217,7 @@ prev.onclick = function (event) {
     document.getElementById('error-msg').innerHTML = '';
 }
 paymentSubmit.onclick=function(event){
+    event.preventDefault();
     fetchPayment();
 }
 
