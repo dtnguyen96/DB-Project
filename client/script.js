@@ -18,8 +18,8 @@ async function fetchFlights() {
     var adult_cnt = document.getElementById('adult_cnt').value;
     var child_cnt = document.getElementById('child_cnt').value;
 
-    adult_count = adult_cnt;
-    child_count = child_cnt;
+    adult_count = Number(adult_cnt);
+    child_count = Number(child_cnt);
 
     console.log(adult_count, child_count)
 
@@ -159,17 +159,29 @@ const displayFlights = () => {
 }
 
 const displayCart = () => {
+    let extra_pass = document.getElementById('extra_passengers');
+
     var cart = document.getElementById("cart-description");
     var total_price = document.getElementById("total-amount");
 
     let cartHTML =  "";
+    let passengerHTML = "";
     
     if (adult_count > 0) { cartHTML += `<p><a href="#">Adult ticket x${adult_count}</a> <span class="price">$${adult_count*adult_cost}</span></p>`}
     if (child_count > 0) { cartHTML += `<p><a href="#">Children ticket x${child_count}</a> <span class="price">$${child_count*child_cost}</span></p>`}
     cartHTML += `<p id='tax-display'>Tax $${((adult_count*adult_cost + child_count*child_cost)*0.30).toFixed(2)}</p>`
     if (adult_count + child_count > 0) {cart.innerHTML = cartHTML;}
 
-    total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`
+    total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`;
+
+    console.log(adult_count + child_count);
+
+    if (adult_count + child_count > 0){
+        for (i = 0; i < (adult_count + child_count - 1); i++) {
+            passengerHTML += `<label for='passenger${i}'>Name ${i+1}</label><input type='text' id='passenger${i}'>`;
+        }
+        extra_pass.innerHTML = passengerHTML;
+    }
 }
 
 var container = document.getElementById('container_slide');
@@ -184,6 +196,8 @@ var admin_btn = document.getElementById('submit-admin-btn');
 var admin_back_btn = document.getElementById('btn-admin-back');
 
 var paymentSubmit=document.getElementById('payment-submit');
+
+var delete_btn = document.getElementById('delete-btn');
 
 next.onclick = function (event) {
     fetchFlights();
@@ -248,4 +262,15 @@ function generate_flight_button(){
         ""
         ]
     loadFlights(flight_info, "admin");
+}
+
+delete_btn.onclick = delete_customer();
+
+async function delete_customer(fullName){
+    try{
+        const response = await fetch(`http://localhost:5000/flights/${fullName}`, {
+            method: "DELETE",
+        })
+        return false;
+    } catch(err) { console.log(err.message);}
 }

@@ -111,6 +111,20 @@ app.listen(5000, ()=>{
   console.log("server has started on port 5000");
 });
 
+app.delete('/flights/:fullName', async (req, res) => {
+  try{
+    const { fullName } = req.params;
+    const deleteCustomer = await pool.query(
+      `DELETE FROM boarding_passes 
+        WHERE boarding_passes.ticket_no
+          IN (SELECT tickets.ticket_no
+              FROM tickets
+                WHERE tickets.passenger_name = ${fullName})
+        `);
+        res.json(`${fullName} was deleted!`);
+  } catch(err) { console.log(err.message);}
+});
+
 function isEmpty(str) {
   return (!str || 0 === str.length);
 }
