@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());      //req.body
 
 //ROUTES
-// 
+// Query from db 
 app.get('/flights', async(req, res)=>{
   try{
     //these are the input from users
@@ -106,6 +106,25 @@ app.get('/flights', async(req, res)=>{
     res.json(new_flightList.rows);
     console.log(new_flightList.rows);
   } catch(err){ console.log(err.message);}
+});
+//Send payment data to db
+app.post('/flights', async(req, res)=>{
+  try{
+
+    var fname = req.param('fname');
+    var email=req.param('email');
+    var cardNum = req.param('cardNum');
+    var total_amount = req.param('total_amount');
+    var phoneNumber = req.param('phoneNumber');
+    var tax= req.param('tax');
+    var groupTravel = req.param('groupTravel');
+    const newPayment = await pool.query(`INSERT INTO payment VALUES(${cardNum}, ${tax}, 15, ${total_amount}) RETURNING *`);
+    res.json(newPayment.rows);   
+    console.log(newPayment.rows);             
+
+  } catch(err){
+    console.log(err.message);
+  }
 });
 app.listen(5000, ()=>{
   console.log("server has started on port 5000");
