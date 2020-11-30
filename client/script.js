@@ -53,12 +53,12 @@ async function fetchPayment() {
     var adult_cnt = document.getElementById('adult_cnt').value;
     var child_cnt = document.getElementById('child_cnt').value;
     var cardNum = document.getElementById('ccnum').value;
-    var ticket_cnt = adult_cnt + child_cnt;
+    var ticket_cnt = Number(adult_cnt) + Number(child_cnt);
     var total_amount = document.getElementById('total-amount').value;
     var phoneNumber = document.getElementById('phone').value;
     var tax = document.getElementById('tax-display').value;
     var groupTravel = false;
-
+    console.log(ticket_cnt);
     if (ticket_cnt > 1){
         groupTravel=true;
     }
@@ -72,6 +72,7 @@ async function fetchPayment() {
         groupTravel
     ]
     console.log(payment_info);
+
     try{
         const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}`, {
             method: "GET",
