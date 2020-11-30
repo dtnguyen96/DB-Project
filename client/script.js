@@ -54,11 +54,13 @@ async function fetchPayment() {
     var child_cnt = document.getElementById('child_cnt').value;
     var cardNum = document.getElementById('ccnum').value;
     var ticket_cnt = Number(adult_cnt) + Number(child_cnt);
-    var total_amount = document.getElementById('total-amount').value;
+    var total_amount = Number(document.getElementById('total-amount').innerText.split('$')[1]);
     var phoneNumber = document.getElementById('phone').value;
-    var tax = document.getElementById('tax-display').value;
+    var tax_string = document.getElementById('tax').innerText;
+    var tax= Number(tax_string.split(" ")[1].split("$")[1]);
     var groupTravel = false;
     console.log(ticket_cnt);
+    console.log(tax);
     if (ticket_cnt > 1){
         groupTravel=true;
     }
@@ -71,6 +73,7 @@ async function fetchPayment() {
         tax,
         groupTravel
     ]
+
     console.log(payment_info);
 
     try{
@@ -165,9 +168,9 @@ const displayCart = () => {
 
     let cartHTML =  "";
     
-    if (adult_count > 0) { cartHTML += `<p><a href="#">Adult ticket x${adult_count}</a> <span class="price">$${adult_count*adult_cost}</span></p>`}
-    if (child_count > 0) { cartHTML += `<p><a href="#">Children ticket x${child_count}</a> <span class="price">$${child_count*child_cost}</span></p>`}
-    cartHTML += `<p id='tax-display'>Tax $${((adult_count*adult_cost + child_count*child_cost)*0.30).toFixed(2)}</p>`
+    if (adult_count > 0) { cartHTML += `<p>Adult ticket x${adult_count}<span class="price">$${adult_count*adult_cost}</span></p>`}
+    if (child_count > 0) { cartHTML += `<p>Children ticket x${child_count}<span class="price">$${child_count*child_cost}</span></p>`}
+    cartHTML += `<p id='tax'>Tax $${((adult_count*adult_cost + child_count*child_cost)*0.30).toFixed(2)}</p>`
     if (adult_count + child_count > 0) {cart.innerHTML = cartHTML;}
 
     total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`
