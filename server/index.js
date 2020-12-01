@@ -31,8 +31,6 @@ app.get('/flights', async(req, res)=>{
     var total_ticket_cnt = a_cnt + c_cnt;
     console.log(total_ticket_cnt);
 
-    // console.log("d_loc: " + d_loc.length + "a_loc: " + a_loc.length + "d_time: " + d_time.length + "a_time: " + a_time.length + " ");
-
     if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time)){
       var new_flightList = await pool.query(
         `SELECT flight_id, 
@@ -123,9 +121,10 @@ app.post('/flights', async(req, res)=>{
     var groupTravel = req.param('groupTravel');
     var groupCnt = req.param('groupCnt');
     var custNames = req.param('custName');
+    var fare_condition = req.param('fare_cond');
+    var flight_id = req.param('flight_id');
 
-    const cust_id =
-     generate_customer_id();
+    const cust_id = generate_customer_id();
     const book_ref_temp = generate_book_ref();
 
     let group_travel_bool = '0';
@@ -140,10 +139,18 @@ app.post('/flights', async(req, res)=>{
     
     for (i = 0; i < groupCnt - 1; i++) {
       console.log(i);
+
       ticket_no = generate_ticket_no();
       passenger_id = generate_passenger_id();
+
       queryCust += `INSERT INTO tickets 
       VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
+
+      console.log(`INSERT INTO ticket_flights
+      VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`);
+
+      queryCust += `INSERT INTO ticket_flights
+      VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
     }
 
     const newPayment = await pool.query(`
@@ -159,7 +166,6 @@ app.post('/flights', async(req, res)=>{
 
       ` + queryCust + `
         COMMIT;`);
-
     console.log(newPayment.rows);             
   } catch(err){
     console.log(err.message, err.lineNumber);

@@ -9,6 +9,9 @@ let child_cost = 60
 let admin_pass = ""
 let admin_generate = false;
 
+let fare_cond = "";
+let flight_id = "";
+
 async function fetchFlights() {
     var depature_location = document.getElementById('flying_from').value;
     var arrival_location = document.getElementById('flying_to').value;
@@ -20,6 +23,7 @@ async function fetchFlights() {
 
     adult_count = Number(adult_cnt);
     child_count = Number(child_cnt);
+    fare_cond = fare_condition;
 
     console.log(adult_count, child_count)
 
@@ -87,7 +91,7 @@ async function fetchPayment() {
     console.log(payment_info);
 
     try{
-        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}`, {
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}&fare_cond=${fare_cond}&flight_id=${flight_id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })
@@ -147,7 +151,6 @@ const displayFlights = () => {
         if (f_table.meal === '0') { meal_bool = "No"; }
         if (f_table.direct_flight === '0') { direct_flight = "No"; }
 
-
         tableHTML +=
             `<tr>
             <th>${f_table.flight_id}</th>
@@ -156,7 +159,7 @@ const displayFlights = () => {
             <th>${movie_bool}</th>
             <th>${meal_bool}</th>
             <th>${direct_flight}</th>
-            <th><button class='submit-btn_submit' onclick="slide_function()">Book</button></th>
+            <th><button class='submit-btn_submit' onclick="slide_function(\'` + f_table.flight_id + `\')"}>Book</button></th>
         </tr>`;
     });
     flight_table.innerHTML += tableHTML;
@@ -197,6 +200,7 @@ const displayCart = () => {
         extra_pass.innerHTML = passengerHTML;
     }
 }
+
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
 var prev = document.getElementById('flight_back_btn');
@@ -217,12 +221,13 @@ next.onclick = function (event) {
     container.classList.add("next");
 }
 
-function slide_function() {
+function slide_function(flight_id_input) {
+    flight_id = flight_id_input;
+    console.log(flight_id);
     displayCart();
     container.classList.add("pay");
     body.style.overflow = "inherit";
     html_obj.style.overflow = "inherit";
-
 }
 
 back_list.onclick = function (event) {
