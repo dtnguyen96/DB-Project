@@ -263,8 +263,14 @@ admin_btn.onclick = function(){
 admin_back_btn.onclick = function(){
     container.classList.remove("admin");
 }
-reset_btn.onclick=function(){
-
+reset_btn.onclick= async function(){
+    try{
+        const response = await fetch(`http://localhost:5000/reset`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        })
+        return false;
+    } catch (err) { console.log(err.message); }
 }
 function generate_flight_button(){
     const flight_info = 
