@@ -211,7 +211,7 @@ var html_obj = document.getElementById("html_tag");
 
 var admin_btn = document.getElementById('submit-admin-btn');
 var admin_back_btn = document.getElementById('btn-admin-back');
-var reset_btn=document.getElementById('reset-btn')
+var reset_btn=document.getElementById('reset-btn');
 var paymentSubmit=document.getElementById('payment-submit');
 
 var delete_btn = document.getElementById('delete-btn');

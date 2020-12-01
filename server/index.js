@@ -174,6 +174,7 @@ app.post('/flights', async (req, res) => {
 });
 app.post('/reset', async (req, res) => {
   try {
+    console.log('Reseting...');
     var reset = await pool.query(resetStr);
   }
   catch (err) {
@@ -257,7 +258,9 @@ function generate_passenger_id() {
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
-var resetStr = `DROP TABLE IF EXISTS airport CASCADE;
+var resetStr = `
+BEGIN;
+DROP TABLE IF EXISTS airport CASCADE;
  
 DROP TABLE IF EXISTS boarding_passes CASCADE;
 
@@ -265,7 +268,7 @@ DROP TABLE IF EXISTS seats CASCADE;
 
 DROP TABLE IF EXISTS aircraft CASCADE;
 
-DROP TABLE IF EXISTS ticket CASCADE;
+DROP TABLE IF EXISTS tickets CASCADE;
 
 DROP TABLE IF EXISTS ticket_flights CASCADE;
 
@@ -359,7 +362,7 @@ CREATE TABLE bookings (
     PRIMARY KEY(book_ref)
 );
 
-CREATE TABLE ticket(
+CREATE TABLE tickets(
     ticket_no char(13) NOT NULL,
     book_ref character(6) NOT NULL,
     passenger_id varchar(20) NOT NULL,
@@ -524,4 +527,5 @@ INSERT INTO seats
 VALUES ('773', '001', 'Comfort');
 
 INSERT INTO seats
-VALUES ('773', '050', 'Economy');`;
+VALUES ('773', '050', 'Economy');
+COMMIT;`;
