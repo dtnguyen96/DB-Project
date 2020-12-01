@@ -175,7 +175,6 @@ const displayCart = () => {
 
     total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`
 }
-
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
 var prev = document.getElementById('flight_back_btn');
@@ -186,7 +185,7 @@ var html_obj = document.getElementById("html_tag");
 
 var admin_btn = document.getElementById('submit-admin-btn');
 var admin_back_btn = document.getElementById('btn-admin-back');
-
+var reset_btn=document.getElementById('reset-btn')
 var paymentSubmit=document.getElementById('payment-submit');
 
 next.onclick = function (event) {
@@ -239,7 +238,9 @@ admin_btn.onclick = function(){
 admin_back_btn.onclick = function(){
     container.classList.remove("admin");
 }
+reset_btn.onclick=function(){
 
+}
 function generate_flight_button(){
     const flight_info = 
         ["",

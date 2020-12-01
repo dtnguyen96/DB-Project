@@ -416,7 +416,11 @@ div#result-display {
 	color: white;
 	border: none;
 }
-
+#reset-btn{
+	background-color: orange;	
+	color: white;
+	border: none;
+}
 div#admincontainer {
     margin: auto;
     position: relative;
