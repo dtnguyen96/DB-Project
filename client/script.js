@@ -18,8 +18,8 @@ async function fetchFlights() {
     var adult_cnt = document.getElementById('adult_cnt').value;
     var child_cnt = document.getElementById('child_cnt').value;
 
-    adult_count = adult_cnt;
-    child_count = child_cnt;
+    adult_count = Number(adult_cnt);
+    child_count = Number(child_cnt);
 
     console.log(adult_count, child_count)
 
@@ -59,11 +59,20 @@ async function fetchPayment() {
     var tax_string = document.getElementById('tax').innerText;
     var tax= Number(tax_string.split(" ")[1].split("$")[1]);
     var groupTravel = false;
+    var grouptCnt = adult_count + child_count;
+    var cust_names = []
+
     console.log(ticket_cnt);
     console.log(tax);
     if (ticket_cnt > 1){
         groupTravel=true;
     }
+
+    for (i = 0; i < grouptCnt - 1; i++)
+    {
+        cust_names.push(document.getElementById(`passenger` + i).val);
+    }
+
     const payment_info=[
         fullName,
         email,
@@ -71,14 +80,15 @@ async function fetchPayment() {
         total_amount,
         phoneNumber,
         tax,
-        groupTravel
-    ]
+        groupTravel,
+        grouptCnt
+    ];
 
     console.log(payment_info);
 
     try{
-        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}`, {
-            method: "GET",
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}`, {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
         })
         return false;
@@ -163,17 +173,29 @@ const displayFlights = () => {
 }
 
 const displayCart = () => {
+    let extra_pass = document.getElementById('extra_passengers');
+
     var cart = document.getElementById("cart-description");
     var total_price = document.getElementById("total-amount");
 
     let cartHTML =  "";
+    let passengerHTML = "";
     
     if (adult_count > 0) { cartHTML += `<p>Adult ticket x${adult_count}<span class="price">$${adult_count*adult_cost}</span></p>`}
     if (child_count > 0) { cartHTML += `<p>Children ticket x${child_count}<span class="price">$${child_count*child_cost}</span></p>`}
     cartHTML += `<p id='tax'>Tax $${((adult_count*adult_cost + child_count*child_cost)*0.30).toFixed(2)}</p>`
     if (adult_count + child_count > 0) {cart.innerHTML = cartHTML;}
 
-    total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`
+    total_price.innerHTML = `<b>$${((adult_count*adult_cost + child_count*child_cost)*0.30 + (adult_count*adult_cost + child_count*child_cost)).toFixed(2)}</b>`;
+
+    console.log(adult_count + child_count);
+
+    if (adult_count + child_count > 0){
+        for (i = 0; i < (adult_count + child_count - 1); i++) {
+            passengerHTML += `<label for='passenger${i}'>Name ${i+1}</label><input type='text' id='passenger${i}'>`;
+        }
+        extra_pass.innerHTML = passengerHTML;
+    }
 }
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
@@ -187,6 +209,8 @@ var admin_btn = document.getElementById('submit-admin-btn');
 var admin_back_btn = document.getElementById('btn-admin-back');
 var reset_btn=document.getElementById('reset-btn')
 var paymentSubmit=document.getElementById('payment-submit');
+
+var delete_btn = document.getElementById('delete-btn');
 
 next.onclick = function (event) {
     fetchFlights();
@@ -219,6 +243,7 @@ prev.onclick = function (event) {
 </tr>`;
     document.getElementById('error-msg').innerHTML = '';
 }
+
 paymentSubmit.onclick=function(event){
     event.preventDefault();
     fetchPayment();
@@ -253,4 +278,15 @@ function generate_flight_button(){
         ""
         ]
     loadFlights(flight_info, "admin");
+}
+
+delete_btn.onclick = delete_customer();
+
+async function delete_customer(fullName){
+    try{
+        const response = await fetch(`http://localhost:5000/flights/${fullName}`, {
+            method: "DELETE",
+        })
+        return false;
+    } catch(err) { console.log(err.message);}
 }

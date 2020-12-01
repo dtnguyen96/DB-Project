@@ -7,6 +7,9 @@ const pool = require('./db');
 app.use(cors());
 app.use(express.json());      //req.body
 
+let customer_id = 0;
+let book_ref = 0;
+
 //ROUTES
 // Query from db 
 app.get('/flights', async(req, res)=>{
@@ -110,26 +113,136 @@ app.get('/flights', async(req, res)=>{
 //Send payment data to db
 app.post('/flights', async(req, res)=>{
   try{
-
     var fname = req.param('fname');
+
     var email=req.param('email');
     var cardNum = req.param('cardNum');
     var total_amount = req.param('total_amount');
     var phoneNumber = req.param('phoneNumber');
     var tax= req.param('tax');
     var groupTravel = req.param('groupTravel');
-    const newPayment = await pool.query(`INSERT INTO payment VALUES(${cardNum}, ${tax}, 15, ${total_amount}) RETURNING *`);
-    res.json(newPayment.rows);   
-    console.log(newPayment.rows);             
+    var groupCnt = req.param('groupCnt');
+    var custNames = req.param('custName');
 
+    const cust_id =
+     generate_customer_id();
+    const book_ref_temp = generate_book_ref();
+
+    let group_travel_bool = '0';
+
+    if (groupTravel === true){ group_travel_bool = '1';}
+
+    var ticket_no = generate_ticket_no();
+    var passenger_id = generate_passenger_id();
+
+    queryCust = `INSERT INTO tickets 
+    VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
+    
+    for (i = 0; i < groupCnt - 1; i++) {
+      console.log(i);
+      ticket_no = generate_ticket_no();
+      passenger_id = generate_passenger_id();
+      queryCust += `INSERT INTO tickets 
+      VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
+    }
+
+    const newPayment = await pool.query(`
+    BEGIN;
+      INSERT INTO payment 
+        VALUES(${cardNum}, ${tax}, 15, ${total_amount});
+      
+      INSERT INTO bookings 
+      VALUES  ('` + book_ref_temp + `', CURRENT_TIMESTAMP, cast(${total_amount} as NUMERIC(10,2)));
+      
+      INSERT INTO customer 
+        VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp +`', '` + group_travel_bool + `', '` + cardNum + `');
+
+      ` + queryCust + `
+        COMMIT;`);
+
+    console.log(newPayment.rows);             
   } catch(err){
-    console.log(err.message);
+    console.log(err.message, err.lineNumber);
   }
 });
+
 app.listen(5000, ()=>{
   console.log("server has started on port 5000");
 });
 
+app.delete('/flights/:fullName', async (req, res) => {
+  try{
+    const { fullName } = req.param;
+    const deleteCustomer = await pool.query(
+      `DELETE FROM boarding_passes 
+        WHERE boarding_passes.ticket_no
+          IN (SELECT tickets.ticket_no
+              FROM tickets
+                WHERE tickets.passenger_name = ${fullName})
+        `);
+        res.json(`${fullName} was deleted!`);
+  } catch(err) { console.log(err.message, err.lineNumber);}
+});
+
 function isEmpty(str) {
   return (!str || 0 === str.length);
+}
+
+function generate_customer_id(){
+  customer_id += 1;
+  let cust_id_str = customer_id.toString();
+
+  let str_num_temp = '';
+  for (i = 0; i < 8-cust_id_str.length; i++)
+  {
+    str_num_temp += '0';
+  }
+  return str_num_temp + cust_id_str;
+}
+
+function generate_book_ref(){
+  book_ref += 1;
+  let book_ref_str = book_ref.toString();
+
+  let str_book_temp = '';
+  for (i = 0; i < 6-book_ref_str.length; i++)
+  {
+    str_book_temp += '0';
+  }
+  console.log((str_book_temp + book_ref_str).length)
+  return book_ref_str;
+}
+
+function generate_ticket_no(){
+  var ticket_no_new = 0;
+  ticket_no_new = getRandomInt(9999999999999);
+
+  try {
+    const ticket_nos = pool.query('SELECT ticket_no FROM tickets;');
+      for (i = 0; i < ticket_nos.rows.length; i++)
+      {
+        var temp_json = JSON.parse(ticket_nos.rows[i]);
+        if (temp_json.ticket_no === ticket_no_new){ ticket_no_new = getRandomInt(9999999999999);}
+      }
+  } catch(err) { console.log(err.message, err.lineNumber);}
+  return ticket_no_new;
+}
+
+function generate_passenger_id(){
+  var passenger_id_new = 0;
+  passenger_id = getRandomInt(99999999999999999999);
+  try {
+    const passenger_ids = pool.query('SELECT passenger_id FROM tickets;')
+    for (i = 0; i < passenger_ids.rows.length; i++)
+    {
+      var temp_json = JSON.parse(passenger_ids.rows[i]);
+      if (temp_json.passenger_id === passenger_id_new){ passenger_id_new = getRandomInt(9999999999999);}
+    }
+} catch(err) { console.log(err.message, err.lineNumber);}
+
+  return passenger_id_new;
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
 }
