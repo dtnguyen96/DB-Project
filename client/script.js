@@ -59,11 +59,20 @@ async function fetchPayment() {
     var tax_string = document.getElementById('tax').innerText;
     var tax= Number(tax_string.split(" ")[1].split("$")[1]);
     var groupTravel = false;
+    var grouptCnt = adult_count + child_count;
+    var cust_names = []
+
     console.log(ticket_cnt);
     console.log(tax);
     if (ticket_cnt > 1){
         groupTravel=true;
     }
+
+    for (i = 0; i < grouptCnt - 1; i++)
+    {
+        cust_names.push(document.getElementById(`passenger` + i).val);
+    }
+
     const payment_info=[
         fullName,
         email,
@@ -71,14 +80,15 @@ async function fetchPayment() {
         total_amount,
         phoneNumber,
         tax,
-        groupTravel
-    ]
+        groupTravel,
+        grouptCnt
+    ];
 
     console.log(payment_info);
 
     try{
-        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}`, {
-            method: "GET",
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}`, {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
         })
         return false;
@@ -234,6 +244,7 @@ prev.onclick = function (event) {
 </tr>`;
     document.getElementById('error-msg').innerHTML = '';
 }
+
 paymentSubmit.onclick=function(event){
     event.preventDefault();
     fetchPayment();
