@@ -270,10 +270,14 @@ admin_back_btn.onclick = function(){
 }
 reset_btn.onclick= async function(){
     try{
+        document.getElementById('result-display').innerHTML = "Reseting database...";
         const response = await fetch(`http://localhost:5000/reset`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })
+        const jsonData = await response.json();
+            document.getElementById('result-display').innerHTML = jsonData;
+
         return false;
     } catch (err) { console.log(err.message); }
 }

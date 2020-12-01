@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const pool = require('./db');
+const { query } = require('./db');
 
 // middleware
 app.use(cors());
@@ -123,6 +124,8 @@ app.post('/flights', async (req, res) => {
     var fare_condition = req.param('fare_cond');
     var flight_id = req.param('flight_id');
 
+    var seat_type = '';
+
     const cust_id = generate_customer_id();
 
     const book_ref_temp = generate_book_ref();
@@ -130,27 +133,42 @@ app.post('/flights', async (req, res) => {
     let group_travel_bool = '0';
 
     if (groupTravel === true) { group_travel_bool = '1'; }
+    if (fare_condition === "Economy") { seat_type = 'seats_avail_econ';}
+    else {seat_type = 'seats_avail_business';}
 
     var ticket_no = generate_ticket_no();
     var passenger_id = generate_passenger_id();
+    var boarding_no = generate_boarding_no();
+    seat_no = generate_seat_no();
+
 
     queryCust = `INSERT INTO tickets 
     VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
 
-    for (i = 0; i < groupCnt - 1; i++) {
-      console.log(i);
+    queryCust += `INSERT INTO ticket_flights
+    VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
 
+    queryCust += `INSERT INTO boarding_passes
+    VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
+  
+    queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
+
+    for (i = 0; i < groupCnt - 1; i++) {
       ticket_no = generate_ticket_no();
       passenger_id = generate_passenger_id();
+      seat_no = generate_seat_no();
+      boarding_no = generate_boarding_no();
 
       queryCust += `INSERT INTO tickets 
       VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
 
-      console.log(`INSERT INTO ticket_flights
-      VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`);
-
       queryCust += `INSERT INTO ticket_flights
       VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
+
+      queryCust += `INSERT INTO boarding_passes
+      VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
+    
+      queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
     }
 
     const newPayment = await pool.query(`
@@ -172,13 +190,17 @@ app.post('/flights', async (req, res) => {
     console.log(err.message, err.lineNumber);
   }
 });
+
+
 app.post('/reset', async (req, res) => {
   try {
     console.log('Reseting...');
     var reset = await pool.query(resetStr);
+    res.json("Database reseted!");
   }
   catch (err) {
-    console.log(err.message, err.lineNumber);
+    res.json("Database failed to be reset.");
+    console.log(err.message);
   }
 
 });
@@ -255,13 +277,56 @@ function generate_passenger_id() {
   return passenger_id_new;
 }
 
+function generate_seat_no()
+{
+  var seat_no_new = "";
+  var seat_letter = getRandomArbitrary(41,60);
+  var seat_num = getRandomInt(99);
+  seat_no_new = String.fromCharCode(seat_letter) + seat_num;
+
+  try {
+    const seat_nos = pool.query('SELECT seat_no FROM boarding_passes;')
+    for (i = 0; i < seat_nos.rows.length; i++) {
+      var temp_json = JSON.parse(seat_nos.rows[i]);
+      if (temp_json.seat_no === seat_no_new) {
+        var seat_no_new = "";
+        var seat_letter = getRandomArbitrary(61-80);
+        var seat_num = getRandomInt(99);
+        seat_no_new = String.fromCharCode(seat_letter) + seat_num;
+      }
+    }
+  } catch (err) { console.log(err.message); }
+
+  return seat_no_new;  
+}
+
+function generate_boarding_no()
+{
+  var boarding_no_new = getRandomInt(99999999);
+  try{
+    const boarding_nos = pool.query('SELECT boarding_no FROM boarding_passes;')
+    for (i = 0; i < boarding_nos.rows.length; i++) 
+    {
+      var temp_json = JSON.parse(boarding_nos.rows[i]);
+      if (temp_json.boarding_no === boarding_no_new) { boarding_no_new = getRandomInt(99999999); }
+    }
+  }catch (err) {console.log(err.message);}
+
+  return boarding_no_new;
+}
+
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
+
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 var resetStr = `
 BEGIN;
 DROP TABLE IF EXISTS airport CASCADE;
- 
+
 DROP TABLE IF EXISTS boarding_passes CASCADE;
 
 DROP TABLE IF EXISTS seats CASCADE;
@@ -360,6 +425,8 @@ CREATE TABLE bookings (
     book_date timestamp WITH time zone NOT NULL,
     total_amount numeric(10, 2) NOT NULL,
     PRIMARY KEY(book_ref)
+--     CONSTRAINT "tickets_book_ref_fkey" FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
+--     CONSTRAINT "customer_book_ref" FOREIGN KEY (book_ref) REFERENCES bookings(book_ref) ON DELETE CASCADE
 );
 
 CREATE TABLE tickets(
@@ -368,7 +435,7 @@ CREATE TABLE tickets(
     passenger_id varchar(20) NOT NULL,
     passenger_name text NOT NULL,
     PRIMARY KEY (ticket_no),
-    CONSTRAINT "tickets_book_ref_fkey" FOREIGN KEY (book_ref) REFERENCES bookings(book_ref)
+    CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES bookings(book_ref)
 );
 
 CREATE TABLE ticket_flights (
@@ -376,8 +443,9 @@ CREATE TABLE ticket_flights (
     flight_id integer NOT NULL,
     fare_conditions character varying(10) NOT NULL,
     PRIMARY KEY (ticket_no, flight_id),
+    CONSTRAINT "boarding_passes_ticket_no_fkey" FOREIGN KEY (ticket_no, flight_id) REFERENCES ticket_flights(ticket_no, flight_id),
     CONSTRAINT ticket_flights_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES flights(flight_id),
-    CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES ticket(ticket_no),
+    CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no),
     CONSTRAINT ticket_flights_fare_conditions_check CHECK (
         (
             (fare_conditions)::text = ANY (
@@ -414,7 +482,7 @@ CREATE TABLE customer (
     card_number character(16) NOT NULL,
     PRIMARY KEY (customer_id),
     CONSTRAINT customer_book_ref FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
-    CONSTRAINT customer_card_number FOREIGN KEY (card_number) REFERENCES payment(card_number)
+    CONSTRAINT customer_card_number FOREIGN KEY (card_number) REFERENCES payment(card_number) ON DELETE CASCADE
 );
 
 
