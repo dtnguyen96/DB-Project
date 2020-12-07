@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors');
 const pool = require('./db');
 const { query } = require('./db');
-
+const fs=require('fs');
 // middleware
 app.use(cors());
 app.use(express.json());      //req.body
@@ -32,40 +32,50 @@ app.get('/flights', async (req, res) => {
     var total_ticket_cnt = a_cnt + c_cnt;
     console.log(total_ticket_cnt);
 
-    if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time)){
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights
-            WHERE seats_available >= ` + total_ticket_cnt
-      );
+    if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time))
+    {
+      let newFlightsQuery =`SELECT flight_id, 
+      scheduled_departure, 
+      scheduled_arrival, 
+      departure_airport, 
+      arrival_airport, 
+      direct_flight, 
+      movie, 
+      meal 
+        FROM flights
+        WHERE seats_available >= ` + total_ticket_cnt;
+      var new_flightList = await pool.query(newFlightsQuery);
+      fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
+        if (err) throw err;
+      })
     }
-    else if (isEmpty(d_loc) === false && isEmpty(a_loc) === false && (isEmpty(d_time) || isEmpty(a_time))) {
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-              AND
-            arrival_airport = ` + `'` + a_loc + `'
-              AND
-            seats_available >= ` + total_ticket_cnt + `
-              AND
-            direct_flight = ` + `'` + round + `'`
-      );
+    else if (isEmpty(d_loc) === false && isEmpty(a_loc) === false && (isEmpty(d_time) || isEmpty(a_time))) 
+     { let newFlightsQuery =`SELECT flight_id, 
+     scheduled_departure, 
+     scheduled_arrival, 
+     departure_airport, 
+     arrival_airport, 
+     direct_flight, 
+     movie, 
+     meal 
+       FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
+         AND
+       arrival_airport = ` + `'` + a_loc + `'
+         AND
+       scheduled_departure >= ` + `'` + d_time + `'
+         AND
+       scheduled_arrival <= ` + `'` + a_time + `' 
+         AND
+       seats_available >= ` + total_ticket_cnt
+       var new_flightList = await pool.query(newFlightsQuery);
+       fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
+        if (err) throw err;
+      })
+      console.log(newFlightsQuery);
 
-      console.log(`SELECT flight_id, 
+    }
+    else {
+      let newFlightsQuery=`SELECT flight_id, 
       scheduled_departure, 
       scheduled_arrival, 
       departure_airport, 
@@ -77,31 +87,15 @@ app.get('/flights', async (req, res) => {
           AND
         arrival_airport = ` + `'` + a_loc + `'
           AND
-        seats_available >= ` + total_ticket_cnt + `
+        scheduled_departure >= ` + `'` + d_time + `'
           AND
-        direct_flight = ` + `'` + round + `'`);
-
-    }
-    else {
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-              AND
-            arrival_airport = ` + `'` + a_loc + `'
-              AND
-            scheduled_departure >= ` + `'` + d_time + `'
-              AND
-            scheduled_arrival <= ` + `'` + a_time + `' 
-              AND
-            seats_available >= ` + total_ticket_cnt
-      );
+        scheduled_arrival <= ` + `'` + a_time + `' 
+          AND
+        seats_available >= ` + total_ticket_cnt ;
+      var new_flightList = await pool.query(newFlightsQuery);
+      fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
+        if (err) throw err;
+      })
     }
 
     res.json(new_flightList.rows);
@@ -170,8 +164,7 @@ app.post('/flights', async (req, res) => {
     
       queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
     }
-
-    const newPayment = await pool.query(`
+    let paymentPostString= `
     BEGIN;
       INSERT INTO payment 
         VALUES(${cardNum}, ${tax}, 15, ${total_amount});
@@ -183,8 +176,11 @@ app.post('/flights', async (req, res) => {
         VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `');
 
       ` + queryCust + `
-        COMMIT;`);
-
+        COMMIT;`;
+    const newPayment = await pool.query(paymentPostString);
+    fs.writeFile('Transaction.sql', paymentPostString, (err)=>{
+      if (err) throw err;
+    })
     console.log(newPayment.rows);             
   } catch(err){
     console.log(err.message, err.lineNumber);
@@ -211,13 +207,14 @@ app.listen(5000, () => {
 app.delete('/flights/:fullName', async (req, res) => {
   try {
     const { fullName } = req.param;
-    const deleteCustomer = await pool.query(
-      `DELETE FROM boarding_passes 
-        WHERE boarding_passes.ticket_no
-          IN (SELECT tickets.ticket_no
-              FROM tickets
-                WHERE tickets.passenger_name = ${fullName})
-        `);
+    
+    let deleteCustomerString= `DELETE FROM boarding_passes 
+    WHERE boarding_passes.ticket_no
+      IN (SELECT tickets.ticket_no
+          FROM tickets
+            WHERE tickets.passenger_name = ${fullName})
+    `;
+    const deleteCustomer = await pool.query(deleteCustomerString);
     res.json(`${fullName} was deleted!`);
   } catch (err) { console.log(err.message, err.lineNumber); }
 });
@@ -254,7 +251,11 @@ function generate_ticket_no() {
   ticket_no_new = getRandomInt(9999999999999);
 
   try {
-    const ticket_nos = pool.query('SELECT ticket_no FROM tickets;');
+    let generateTicketString='SELECT ticket_no FROM tickets;';
+    const ticket_nos = pool.query(generateTicketString);
+    fs.appendFile('Query.sql', generateTicketString, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < ticket_nos.rows.length; i++) {
       var temp_json = JSON.parse(ticket_nos.rows[i]);
       if (temp_json.ticket_no === ticket_no_new) { ticket_no_new = getRandomInt(9999999999999); }
@@ -267,7 +268,11 @@ function generate_passenger_id() {
   var passenger_id_new = 0;
   passenger_id = getRandomInt(99999999999999999999);
   try {
-    const passenger_ids = pool.query('SELECT passenger_id FROM tickets;')
+    let generatePassengerStr='SELECT passenger_id FROM tickets;';
+    const passenger_ids = pool.query(generatePassengerStr)
+    fs.appendFile('Query.sql', generatePassengerStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < passenger_ids.rows.length; i++) {
       var temp_json = JSON.parse(passenger_ids.rows[i]);
       if (temp_json.passenger_id === passenger_id_new) { passenger_id_new = getRandomInt(9999999999999); }
@@ -285,7 +290,11 @@ function generate_seat_no()
   seat_no_new = String.fromCharCode(seat_letter) + seat_num;
 
   try {
-    const seat_nos = pool.query('SELECT seat_no FROM boarding_passes;')
+    let generateSeatStr='SELECT seat_no FROM boarding_passes;';
+    const seat_nos = pool.query(generateSeatStr)
+    fs.appendFile('Query.sql', generateSeatStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < seat_nos.rows.length; i++) {
       var temp_json = JSON.parse(seat_nos.rows[i]);
       if (temp_json.seat_no === seat_no_new) {
@@ -304,7 +313,11 @@ function generate_boarding_no()
 {
   var boarding_no_new = getRandomInt(99999999);
   try{
-    const boarding_nos = pool.query('SELECT boarding_no FROM boarding_passes;')
+    let generateBoardingStr='SELECT boarding_no FROM boarding_passes;';
+    const boarding_nos = pool.query(generateBoardingStr)
+    fs.appendFile('Query.sql', generateBoardingStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < boarding_nos.rows.length; i++) 
     {
       var temp_json = JSON.parse(boarding_nos.rows[i]);
