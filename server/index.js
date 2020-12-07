@@ -11,13 +11,10 @@ app.use(express.json());      //req.body
 let customer_id = 0;
 let book_ref = 0;
 
-//ROUTES
-// Query from db 
 app.get('/flights', async (req, res) => {
   try {
-    //these are the input from users
-    var d_loc = req.param('dloc');
-    var a_loc = req.param('aloc');
+    var d_loc = req.param('dloc').toUpperCase();
+    var a_loc = req.param('aloc').toUpperCase();
 
     var d_time = req.param('dtime');
     var a_time = req.param('atime');
@@ -28,87 +25,54 @@ app.get('/flights', async (req, res) => {
     var c_cnt = parseInt(req.param('c_cnt'));
 
     var round = req.param('round');
-
     var total_ticket_cnt = a_cnt + c_cnt;
-    console.log(total_ticket_cnt);
 
-    if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time)){
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights
-            WHERE seats_available >= ` + total_ticket_cnt
-      );
-    }
-    else if (isEmpty(d_loc) === false && isEmpty(a_loc) === false && (isEmpty(d_time) || isEmpty(a_time))) {
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-              AND
-            arrival_airport = ` + `'` + a_loc + `'
-              AND
-            seats_available >= ` + total_ticket_cnt + `
-              AND
-            direct_flight = ` + `'` + round + `'`
-      );
+    var type = req.param('f_cond');
 
-      console.log(`SELECT flight_id, 
-      scheduled_departure, 
-      scheduled_arrival, 
-      departure_airport, 
-      arrival_airport, 
-      direct_flight, 
-      movie, 
-      meal 
-        FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-          AND
-        arrival_airport = ` + `'` + a_loc + `'
-          AND
-        seats_available >= ` + total_ticket_cnt + `
-          AND
-        direct_flight = ` + `'` + round + `'`);
+    var meal_bool = req.param('meal');
+    var movie_bool = req.param('movie');
 
-    }
-    else {
-      var new_flightList = await pool.query(
-        `SELECT flight_id, 
-          scheduled_departure, 
-          scheduled_arrival, 
-          departure_airport, 
-          arrival_airport, 
-          direct_flight, 
-          movie, 
-          meal 
-            FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-              AND
-            arrival_airport = ` + `'` + a_loc + `'
-              AND
-            scheduled_departure >= ` + `'` + d_time + `'
-              AND
-            scheduled_arrival <= ` + `'` + a_time + `' 
-              AND
-            seats_available >= ` + total_ticket_cnt
-      );
+    var meal = '0';
+    var movie = '0';
+
+    if (meal_bool === 'Yes') { meal = '1';}
+    if (movie_bool === 'Yes') { movie = '1';}
+
+    var seat_type = "seats_avail_econ";
+    if (type === 'Business')
+    {
+      seat_type = "seats_avail_business";
     }
 
-    res.json(new_flightList.rows);
-    console.log(new_flightList.rows);
+    var new_flight_list = await pool.query(`
+      SELECT arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      AND
+      routes.arrival_airport = ` + `'` + a_loc + `'
+      AND
+      main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`);
+
+
+    res.json(new_flight_list.rows);
+    console.log(new_flight_list.rows);
   } catch (err) { console.log(err.message); }
 });
-//Send payment data to db
+
 app.post('/flights', async (req, res) => {
   try {
     var fname = req.param('fname');

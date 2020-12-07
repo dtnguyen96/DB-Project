@@ -130,6 +130,26 @@
 										<span class="form-label">Children</span>
 									</div>
 								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<select class="form-control" id="movie">
+											<option>Yes</option>
+											<option>No</option>
+										</select>
+										<span class="select-arrow"></span>
+										<span class="form-label">Movie</span>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<select class="form-control" id="meal">
+											<option>Yes</option>
+											<option>No</option>
+										</select>
+										<span class="select-arrow"></span>
+										<span class="form-label">Meal</span>
+									</div>
+								</div>
 							</div>
 							<div class="form-btn">
 								<button class="submit-btn" id = 'check_flights_btn'>Check availability</button>
@@ -147,12 +167,10 @@
 			<div class="title_display">Available Flights</div>
 			<table id="table_display">
 				<tr>
-					<th>Flight</th>
 					<th>Flight Route</th>
 					<th>Time Frame</th>
 					<th>Movie(s)</th>
 					<th>Meal(s)</th>
-					<th>Direct Flight</th> 
 				</tr>
 			</table>
 			<div id='error-msg'></div>
