@@ -3,11 +3,15 @@ const app = express();
 const cors = require('cors');
 const pool = require('./db');
 const { query } = require('./db');
+<<<<<<< HEAD
 const fs = require('fs');
 let sql_str='';
 // middleware
+=======
+const fs=require('fs');
+>>>>>>> 555e9aef74033c54d2bd74728f7b91bbd56b36f8
 app.use(cors());
-app.use(express.json());      //req.body
+app.use(express.json());
 
 let customer_id = 0
 let book_ref = 0
@@ -250,6 +254,25 @@ app.delete('/flights/:fullName', async (req, res) => {
     res.json(`${fullName} was deleted!`);
   } catch (err) { console.log(err.message, err.lineNumber); }
 });
+
+app.post('/checkin/list', async (req, res) => {
+  try {
+    const ticket_id = req.param('ticket_id');
+    var query_str = '';
+
+    if (ticket_id !== "")
+    {
+      query_str = '
+      '
+    }
+
+
+    console.log(ticket_id);
+  } catch (err) {console.log(err.message);}
+});
+
+
+
 
 function isEmpty(str) {
   return (!str || 0 === str.length);
