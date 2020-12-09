@@ -58,7 +58,7 @@ CREATE TABLE flights (
     seats_avail_econ integer NOT NULL,
     seats_avail_business integer NOT NULL,
     seats_booked integer NOT NULL,
-    actual_depature timestamp WITH time zone,
+    actual_departure timestamp WITH time zone,
     actual_arrival timestamp WITH time zone,
     movie character(1) NOT NULL,
     meal character(1) NOT NULL,
@@ -97,12 +97,14 @@ CREATE TABLE routes (
     arrival_airport character(3) NOT NULL,
     departure_airport character(3) NOT NULL,
     intermediate_airport character(3) NOT NULL,
+    scheduled_departure timestamp WITH time zone NOT NULL,
+    scheduled_arrival timestamp WITH time zone NOT NULL,
     direct_flight character(1) NOT NULL,
     main_flight_id integer NOT NULL,
     intermediate_flight_id integer NOT NULL,
     PRIMARY KEY (route_id),
-    -- CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
-    -- CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
+    CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
+    CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
     CONSTRAINT main_flight_id FOREIGN KEY (main_flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE
 );
 
@@ -165,7 +167,6 @@ CREATE TABLE customer (
     family_couple_group character(1) NOT NULL,
     card_number character(16) NOT NULL,
     route_id character(10) NOT NULL,
-    roundtrip character(1) NOT NULL,
 
     PRIMARY KEY (customer_id),
     CONSTRAINT customer_book_ref FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
@@ -214,6 +215,15 @@ VALUES (
         NULL,
         'PT'
     );
+
+INSERT INTO airport
+VALUES (
+        'PVG',
+        'Shanghai Pudong International Airport',
+        'Shanghai',
+        NULL,
+        'CST'
+        );
 
 INSERT INTO airport
 VALUES ('ORD', 'O Hare Airport', 'Chicago', NULL, 'CT');
@@ -276,12 +286,34 @@ VALUES (
     '0'
    );
 
+INSERT INTO flights
+VALUES (
+        1003,
+        'PG0030',
+        '2020-11-10 11:50:00+03',
+        '2020-12-11 09:50:00+03',
+        'JFK',
+        'PVG',
+        'Scheduled',
+        '773',
+        50,
+        20,
+        30,
+        0,
+        NULL,
+        NULL,
+        '1',
+        '1'
+);
+
 INSERT INTO routes
 VALUES (
     '1',
-    'HOU',
     'JFK',
+    'HOU',
     'NAN',
+    '2020-11-10 09:50:00+03',
+    '2020-11-10 14:55:00+03',
     '1',
     1001,
     -1
@@ -290,16 +322,53 @@ VALUES (
 INSERT INTO routes
 VALUES (
     '2',
-    'LAX',
     'JFK',
+    'LAX',
     'NAN',
+    '2020-11-11 09:50:00+03',
+    '2020-11-11 15:55:00+03',
     '1',
     1002,
     -1
 );
+
+INSERT INTO routes
+VALUES (
+        '3',
+        'PVG',
+        'HOU',
+        'JFK',
+        '2020-11-11 09:50:00+03',
+        '2020-12-11 09:50:00+03',
+        '1',
+        1001,
+        1003
+       );
 
 INSERT INTO seats
 VALUES ('773', '001', 'Comfort');
 
 INSERT INTO seats
 VALUES ('773', '050', 'Economy');
+
+
+
+--       SELECT arrival_airport,
+--         intermediate_airport,
+--         departure_airport,
+--         main_flight_id,
+--         intermediate_flight_id
+--       FROM routes
+--       WHERE routes.departure_airport = 'HOU'
+--       AND
+--       routes.arrival_airport = 'PVG'
+--       AND
+--       main_flight_id IN
+--         (SELECT flight_id
+--           FROM flights
+--           WHERE
+--             seats_avail_econ >= 1
+--             AND
+--             movie = '1'
+--             AND
+--             meal = '1')
