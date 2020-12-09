@@ -3,13 +3,13 @@ const app = express();
 const cors = require('cors');
 const pool = require('./db');
 const { query } = require('./db');
-
+const fs=require('fs');
 // middleware
 app.use(cors());
 app.use(express.json());      //req.body
 
-let customer_id = 0;
-let book_ref = 0;
+let customer_id = 0
+let book_ref = 0
 
 app.get('/flights', async (req, res) => {
   try {
@@ -18,8 +18,6 @@ app.get('/flights', async (req, res) => {
 
     var d_time = req.param('dtime');
     var a_time = req.param('atime');
-
-    var f_cond = req.param('f_cond');
 
     var a_cnt = parseInt(req.param('a_cnt'));
     var c_cnt = parseInt(req.param('c_cnt'));
@@ -44,8 +42,34 @@ app.get('/flights', async (req, res) => {
       seat_type = "seats_avail_business";
     }
 
-    var new_flight_list = await pool.query(`
-      SELECT arrival_airport, 
+    var new_flight_list_str = ``;
+
+    if (a_time === '' && d_time === '' && d_loc === '' && a_loc === ''){
+      new_flight_list_str = `
+      SELECT route_id, 
+        arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`;
+    }
+    else if (a_time === '' && d_time === '')
+    {
+      new_flight_list_str = `
+      SELECT route_id, 
+        arrival_airport, 
         intermediate_airport,
         departure_airport,
         main_flight_id,
@@ -65,9 +89,37 @@ app.get('/flights', async (req, res) => {
             AND 
             movie = '` + movie + `'
             AND
-            meal = '` + meal + `')`);
+            meal = '` + meal + `')`;
+    }
+    else{
+    new_flight_list_str = `
+      SELECT route_id,
+        arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      AND
+      routes.arrival_airport = ` + `'` + a_loc + `'
+      AND
+      scheduled_arrival >= ` + a_time +  `
+      AND
+      scheduled_departure <= ` + d_time +  `
+      main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`;}
 
-
+    var new_flight_list = await pool.query(new_flight_list_str);
     res.json(new_flight_list.rows);
     console.log(new_flight_list.rows);
   } catch (err) { console.log(err.message); }
@@ -76,7 +128,6 @@ app.get('/flights', async (req, res) => {
 app.post('/flights', async (req, res) => {
   try {
     var fname = req.param('fname');
-
     var email = req.param('email');
     var cardNum = req.param('cardNum');
     var total_amount = req.param('total_amount');
@@ -87,12 +138,14 @@ app.post('/flights', async (req, res) => {
     var custNames = req.param('custName');
     var fare_condition = req.param('fare_cond');
     var flight_id = req.param('flight_id');
+    var flight_id_2 = req.param('flight_id_2');
+    var route_id = req.param('route_id');
 
     var seat_type = '';
 
-    const cust_id = generate_customer_id();
+    var cust_id = generate_customer_id();
 
-    const book_ref_temp = generate_book_ref();
+    var book_ref_temp = generate_book_ref();
 
     let group_travel_bool = '0';
 
@@ -105,16 +158,12 @@ app.post('/flights', async (req, res) => {
     var boarding_no = generate_boarding_no();
     seat_no = generate_seat_no();
 
-
     queryCust = `INSERT INTO tickets 
     VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
 
     queryCust += `INSERT INTO ticket_flights
     VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
 
-    queryCust += `INSERT INTO boarding_passes
-    VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
-  
     queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
 
     for (i = 0; i < groupCnt - 1; i++) {
@@ -129,13 +178,21 @@ app.post('/flights', async (req, res) => {
       queryCust += `INSERT INTO ticket_flights
       VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
 
-      queryCust += `INSERT INTO boarding_passes
-      VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
-    
+      if (flight_id_2 != -1) 
+      { 
+        queryCust += `INSERT INTO ticket_flights
+        VALUES ('` + ticket_no +  `','` + flight_id_2 + `','` + fare_condition +  `');`;
+      }
+
       queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
+      
+      if (flight_id_2 != -1)
+      {
+        queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id_2 + `;`;
+      }
     }
 
-    const newPayment = await pool.query(`
+    let paymentPostString = `
     BEGIN;
       INSERT INTO payment 
         VALUES(${cardNum}, ${tax}, 15, ${total_amount});
@@ -144,11 +201,14 @@ app.post('/flights', async (req, res) => {
       VALUES  ('` + book_ref_temp + `', CURRENT_TIMESTAMP, cast(${total_amount} as NUMERIC(10,2)));
       
       INSERT INTO customer 
-        VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `');
+        VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `', '` + route_id + `');
 
       ` + queryCust + `
-        COMMIT;`);
-
+        COMMIT;`;
+    const newPayment = await pool.query(paymentPostString);
+    fs.writeFile('Transaction.sql', paymentPostString, (err)=>{
+      if (err) throw err;
+    })
     console.log(newPayment.rows);             
   } catch(err){
     console.log(err.message, err.lineNumber);
@@ -175,13 +235,14 @@ app.listen(5000, () => {
 app.delete('/flights/:fullName', async (req, res) => {
   try {
     const { fullName } = req.param;
-    const deleteCustomer = await pool.query(
-      `DELETE FROM boarding_passes 
-        WHERE boarding_passes.ticket_no
-          IN (SELECT tickets.ticket_no
-              FROM tickets
-                WHERE tickets.passenger_name = ${fullName})
-        `);
+    
+    let deleteCustomerString= `DELETE FROM boarding_passes 
+    WHERE boarding_passes.ticket_no
+      IN (SELECT tickets.ticket_no
+          FROM tickets
+            WHERE tickets.passenger_name = ${fullName})
+    `;
+    const deleteCustomer = await pool.query(deleteCustomerString);
     res.json(`${fullName} was deleted!`);
   } catch (err) { console.log(err.message, err.lineNumber); }
 });
@@ -218,7 +279,11 @@ function generate_ticket_no() {
   ticket_no_new = getRandomInt(9999999999999);
 
   try {
-    const ticket_nos = pool.query('SELECT ticket_no FROM tickets;');
+    let generateTicketString='SELECT ticket_no FROM tickets;';
+    const ticket_nos = pool.query(generateTicketString);
+    fs.appendFile('Query.sql', generateTicketString, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < ticket_nos.rows.length; i++) {
       var temp_json = JSON.parse(ticket_nos.rows[i]);
       if (temp_json.ticket_no === ticket_no_new) { ticket_no_new = getRandomInt(9999999999999); }
@@ -231,7 +296,11 @@ function generate_passenger_id() {
   var passenger_id_new = 0;
   passenger_id = getRandomInt(99999999999999999999);
   try {
-    const passenger_ids = pool.query('SELECT passenger_id FROM tickets;')
+    let generatePassengerStr='SELECT passenger_id FROM tickets;';
+    const passenger_ids = pool.query(generatePassengerStr)
+    fs.appendFile('Query.sql', generatePassengerStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < passenger_ids.rows.length; i++) {
       var temp_json = JSON.parse(passenger_ids.rows[i]);
       if (temp_json.passenger_id === passenger_id_new) { passenger_id_new = getRandomInt(9999999999999); }
@@ -249,7 +318,11 @@ function generate_seat_no()
   seat_no_new = String.fromCharCode(seat_letter) + seat_num;
 
   try {
-    const seat_nos = pool.query('SELECT seat_no FROM boarding_passes;')
+    let generateSeatStr='SELECT seat_no FROM boarding_passes;';
+    const seat_nos = pool.query(generateSeatStr)
+    fs.appendFile('Query.sql', generateSeatStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < seat_nos.rows.length; i++) {
       var temp_json = JSON.parse(seat_nos.rows[i]);
       if (temp_json.seat_no === seat_no_new) {
@@ -268,7 +341,11 @@ function generate_boarding_no()
 {
   var boarding_no_new = getRandomInt(99999999);
   try{
-    const boarding_nos = pool.query('SELECT boarding_no FROM boarding_passes;')
+    let generateBoardingStr='SELECT boarding_no FROM boarding_passes;';
+    const boarding_nos = pool.query(generateBoardingStr)
+    fs.appendFile('Query.sql', generateBoardingStr, function (err) {
+      if (err) throw err;
+    });
     for (i = 0; i < boarding_nos.rows.length; i++) 
     {
       var temp_json = JSON.parse(boarding_nos.rows[i]);

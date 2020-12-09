@@ -11,6 +11,9 @@ let admin_generate = false;
 
 let fare_cond = "";
 let flight_id = "";
+let flight_id_2 = "";
+
+let route_id = "";
 
 let movie_global = "Yes";
 let meal_global = "Yes";
@@ -101,7 +104,7 @@ async function fetchPayment() {
     console.log(payment_info);
 
     try{
-        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}&fare_cond=${fare_cond}&flight_id=${flight_id}`, {
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}&fare_cond=${fare_cond}&flight_id=${flight_id}&flight_id_2=${flight_id_2}&route_id=${route_id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })
@@ -168,7 +171,7 @@ const displayFlights = () => {
             <th>${f_table.scheduled_departure} TO ${f_table.scheduled_arrival}</th>
             <th>${movie_global}</th>
             <th>${meal_global}</th>
-            <th><button class='submit-btn_submit' onclick="slide_function(\'` + f_table.main_flight_id + `\')"}>Book</button></th>
+            <th><button class='submit-btn_submit' onclick="slide_function(\'` + f_table.main_flight_id + `\' ,\'` + f_table.intermediate_flight_id + `\' ,\'` + f_table.route_id.trim() + `\')"}>Book</button></th>
         </tr>`;
     });
     flight_table.innerHTML += tableHTML;
@@ -227,8 +230,10 @@ next.onclick = function (event) {
     container.classList.add("next");
 }
 
-function slide_function(flight_id_input) {
+function slide_function(flight_id_input, flight_id_input_2, route_id_input) {
     flight_id = flight_id_input;
+    flight_id_2 = flight_id_input_2
+    route_id = route_id_input;
     console.log(flight_id);
     displayCart();
     container.classList.add("pay");
