@@ -225,6 +225,7 @@ var paymentSubmit=document.getElementById('payment-submit');
 
 var delete_btn = document.getElementById('delete-btn');
 
+
 next.onclick = function (event) {
     fetchFlights();
     container.classList.add("next");
@@ -277,7 +278,9 @@ admin_btn.onclick = function(){
 
 admin_back_btn.onclick = function(){
     container.classList.remove("admin");
+    console.log("adding admin");
 }
+
 reset_btn.onclick= async function(){
     try{
         document.getElementById('result-display').innerHTML = "Reseting database...";
