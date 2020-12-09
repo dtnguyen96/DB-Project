@@ -101,8 +101,8 @@ CREATE TABLE routes (
     main_flight_id integer NOT NULL,
     intermediate_flight_id integer NOT NULL,
     PRIMARY KEY (route_id),
-    CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
-    CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
+    -- CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
+    -- CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
     CONSTRAINT main_flight_id FOREIGN KEY (main_flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE
 );
 

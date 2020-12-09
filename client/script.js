@@ -11,6 +11,12 @@ let admin_generate = false;
 
 let fare_cond = "";
 let flight_id = "";
+let flight_id_2 = "";
+
+let route_id = "";
+
+let movie_global = "Yes";
+let meal_global = "Yes";
 
 async function fetchFlights() {
     var depature_location = document.getElementById('flying_from').value;
@@ -20,17 +26,20 @@ async function fetchFlights() {
     var fare_condition = document.getElementById('fare_condition').value;
     var adult_cnt = document.getElementById('adult_cnt').value;
     var child_cnt = document.getElementById('child_cnt').value;
+    var movie = document.getElementById('movie').value;
+    var meal = document.getElementById('meal').value;
+
+    movie_global = movie;
+    meal_global = meal;
 
     adult_count = Number(adult_cnt);
     child_count = Number(child_cnt);
     fare_cond = fare_condition;
 
-    console.log(adult_count, child_count)
-
-    var roundtrip = '';
+    console.log(adult_count, child_count) 
 
     if (document.getElementById('one-way').checked === true) { roundtrip = '1'; }
-    if (document.getElementById('roundtrip').cheked === true) { roundtrip = '0'; }
+    if (document.getElementById('roundtrip').checked === true) { roundtrip = '0'; }
 
     const flight_info =
         [depature_location,
@@ -40,8 +49,12 @@ async function fetchFlights() {
             fare_condition,
             adult_cnt,
             child_cnt,
-            roundtrip
+            roundtrip,
+            movie,
+            meal
         ]
+
+    console.log(flight_info);
 
     try {
        loadFlights(flight_info, "");
@@ -91,7 +104,7 @@ async function fetchPayment() {
     console.log(payment_info);
 
     try{
-        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}&fare_cond=${fare_cond}&flight_id=${flight_id}`, {
+        const response = await fetch(`http://localhost:5000/flights/?fname=${payment_info[0]}&email=${payment_info[1]}&cardNum=${payment_info[2]}&total_amount=${payment_info[3]}&phoneNumber=${payment_info[4]}&tax=${payment_info[5]}&groupTravel=${payment_info[6]}&groupCnt=${payment_info[7]}&custName=${cust_names}&fare_cond=${fare_cond}&flight_id=${flight_id}&flight_id_2=${flight_id_2}&route_id=${route_id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })
@@ -107,7 +120,7 @@ const setFlights = (data) => {
 
 async function loadFlights(flight_info, type) {
     try{
-        const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}&aloc=${flight_info[1]}&dtime=${flight_info[2]}&atime=${flight_info[3]}&f_cond=${flight_info[4]}&a_cnt=${flight_info[5]}&c_cnt=${flight_info[6]}&round=${flight_info[7]}`);
+        const response = await fetch(`http://localhost:5000/flights/?dloc=${flight_info[0]}&aloc=${flight_info[1]}&dtime=${flight_info[2]}&atime=${flight_info[3]}&f_cond=${flight_info[4]}&a_cnt=${flight_info[5]}&c_cnt=${flight_info[6]}&round=${flight_info[7]}&movie=${flight_info[8]}&meal=${flight_info[9]}`);
         const jsonData = await response.json();
 
         setFlights(jsonData);
@@ -127,7 +140,7 @@ const displayFlightsAdmin = () => {
         flight_info_storage.map(f_table => {
             btnHTML += 
             `<button class='submit-btn'>
-                <div>${f_table.flight_id}</div>
+                <div>${f_table.main_flight_id}</div>
                 <div>${f_table.departure_airport} TO ${f_table.arrival_airport}</div>
             </button>
             `
@@ -141,38 +154,34 @@ const displayFlights = () => {
     const flight_table = document.getElementById('table_display');
 
     let tableHTML = "";
-    if (flight_info_storage.length === 0) { console.log('zerooo'); }
+    if (flight_info_storage.length === 0) { console.log('Query returned nothing'); }
     flight_info_storage.map(f_table => {
         var movie_bool = "Yes";
         var meal_bool = "Yes";
-        var direct_flight = "Yes";
 
-        if (f_table.movie === '0') { movie_bool = "No"; }
-        if (f_table.meal === '0') { meal_bool = "No"; }
-        if (f_table.direct_flight === '0') { direct_flight = "No"; }
+        var inter_airport = ``;
+        
+        if (f_table.intermediate_airport != "NAN") {
+            inter_airport = `${f_table.intermediate_airport} →`;
+        }
 
         tableHTML +=
             `<tr>
-            <th>${f_table.flight_id}</th>
-            <th>${f_table.departure_airport} TO ${f_table.arrival_airport}</th>
+            <th>${f_table.departure_airport} → ` + inter_airport +  `${f_table.arrival_airport}</th>
             <th>${f_table.scheduled_departure} TO ${f_table.scheduled_arrival}</th>
-            <th>${movie_bool}</th>
-            <th>${meal_bool}</th>
-            <th>${direct_flight}</th>
-            <th><button class='submit-btn_submit' onclick="slide_function(\'` + f_table.flight_id + `\')"}>Book</button></th>
+            <th>${movie_global}</th>
+            <th>${meal_global}</th>
+            <th><button class='submit-btn_submit' onclick="slide_function(\'` + f_table.main_flight_id + `\' ,\'` + f_table.intermediate_flight_id + `\' ,\'` + f_table.route_id.trim() + `\')"}>Book</button></th>
         </tr>`;
     });
     flight_table.innerHTML += tableHTML;
     if (flight_table.innerHTML ==
-        `<tbody><tr>
-        <th>Flight</th>
+        `<tr>
         <th>Flight Route</th>
         <th>Time Frame</th>
         <th>Movie(s)</th>
         <th>Meal(s)</th>
-        <th>Direct Flight</th> 
-    </tr>
-</tbody>`) { document.getElementById('error-msg').innerHTML = 'Bad input received!'; }
+    </tr>`) { document.getElementById('error-msg').innerHTML = 'Bad input received!'; }
 }
 
 const displayCart = () => {
@@ -221,8 +230,10 @@ next.onclick = function (event) {
     container.classList.add("next");
 }
 
-function slide_function(flight_id_input) {
+function slide_function(flight_id_input, flight_id_input_2, route_id_input) {
     flight_id = flight_id_input;
+    flight_id_2 = flight_id_input_2
+    route_id = route_id_input;
     console.log(flight_id);
     displayCart();
     container.classList.add("pay");
@@ -238,13 +249,12 @@ back_list.onclick = function (event) {
 
 prev.onclick = function (event) {
     container.classList.remove("next");
-    document.getElementById("table_display").innerHTML = `<tr>
-    <th>Flight</th>
+    document.getElementById("table_display").innerHTML = `
+<tr>
     <th>Flight Route</th>
     <th>Time Frame</th>
     <th>Movie(s)</th>
     <th>Meal(s)</th>
-    <th>Direct Flight</th>
 </tr>`;
     document.getElementById('error-msg').innerHTML = '';
 }

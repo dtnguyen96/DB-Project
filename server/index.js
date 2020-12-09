@@ -8,105 +8,126 @@ const fs=require('fs');
 app.use(cors());
 app.use(express.json());      //req.body
 
-let customer_id = 0;
-let book_ref = 0;
+let customer_id = 0
+let book_ref = 0
 
-//ROUTES
-// Query from db 
 app.get('/flights', async (req, res) => {
   try {
-    //these are the input from users
-    var d_loc = req.param('dloc');
-    var a_loc = req.param('aloc');
+    var d_loc = req.param('dloc').toUpperCase();
+    var a_loc = req.param('aloc').toUpperCase();
 
     var d_time = req.param('dtime');
     var a_time = req.param('atime');
-
-    var f_cond = req.param('f_cond');
 
     var a_cnt = parseInt(req.param('a_cnt'));
     var c_cnt = parseInt(req.param('c_cnt'));
 
     var round = req.param('round');
-
     var total_ticket_cnt = a_cnt + c_cnt;
-    console.log(total_ticket_cnt);
 
-    if (isEmpty(d_loc) && isEmpty(a_loc) && isEmpty(d_time) && isEmpty(a_time))
+    var type = req.param('f_cond');
+
+    var meal_bool = req.param('meal');
+    var movie_bool = req.param('movie');
+
+    var meal = '0';
+    var movie = '0';
+
+    if (meal_bool === 'Yes') { meal = '1';}
+    if (movie_bool === 'Yes') { movie = '1';}
+
+    var seat_type = "seats_avail_econ";
+    if (type === 'Business')
     {
-      let newFlightsQuery =`SELECT flight_id, 
-      scheduled_departure, 
-      scheduled_arrival, 
-      departure_airport, 
-      arrival_airport, 
-      direct_flight, 
-      movie, 
-      meal 
-        FROM flights
-        WHERE seats_available >= ` + total_ticket_cnt;
-      var new_flightList = await pool.query(newFlightsQuery);
-      fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
-        if (err) throw err;
-      })
-    }
-    else if (isEmpty(d_loc) === false && isEmpty(a_loc) === false && (isEmpty(d_time) || isEmpty(a_time))) 
-     { let newFlightsQuery =`SELECT flight_id, 
-     scheduled_departure, 
-     scheduled_arrival, 
-     departure_airport, 
-     arrival_airport, 
-     direct_flight, 
-     movie, 
-     meal 
-       FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-         AND
-       arrival_airport = ` + `'` + a_loc + `'
-         AND
-       scheduled_departure >= ` + `'` + d_time + `'
-         AND
-       scheduled_arrival <= ` + `'` + a_time + `' 
-         AND
-       seats_available >= ` + total_ticket_cnt
-       var new_flightList = await pool.query(newFlightsQuery);
-       fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
-        if (err) throw err;
-      })
-      console.log(newFlightsQuery);
-
-    }
-    else {
-      let newFlightsQuery=`SELECT flight_id, 
-      scheduled_departure, 
-      scheduled_arrival, 
-      departure_airport, 
-      arrival_airport, 
-      direct_flight, 
-      movie, 
-      meal 
-        FROM flights WHERE departure_airport = ` + `'` + d_loc + `' 
-          AND
-        arrival_airport = ` + `'` + a_loc + `'
-          AND
-        scheduled_departure >= ` + `'` + d_time + `'
-          AND
-        scheduled_arrival <= ` + `'` + a_time + `' 
-          AND
-        seats_available >= ` + total_ticket_cnt ;
-      var new_flightList = await pool.query(newFlightsQuery);
-      fs.writeFile('Query.sql', newFlightsQuery, (err)=>{
-        if (err) throw err;
-      })
+      seat_type = "seats_avail_business";
     }
 
-    res.json(new_flightList.rows);
-    console.log(new_flightList.rows);
+    var new_flight_list_str = ``;
+
+    if (a_time === '' && d_time === '' && d_loc === '' && a_loc === ''){
+      new_flight_list_str = `
+      SELECT route_id, 
+        arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`;
+    }
+    else if (a_time === '' && d_time === '')
+    {
+      new_flight_list_str = `
+      SELECT route_id, 
+        arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      AND
+      routes.arrival_airport = ` + `'` + a_loc + `'
+      AND
+      main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`;
+    }
+    else{
+    new_flight_list_str = `
+      SELECT route_id,
+        arrival_airport, 
+        intermediate_airport,
+        departure_airport,
+        main_flight_id,
+        intermediate_flight_id,
+        scheduled_departure,
+        scheduled_arrival
+      FROM routes
+      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      AND
+      routes.arrival_airport = ` + `'` + a_loc + `'
+      AND
+      scheduled_arrival >= ` + a_time +  `
+      AND
+      scheduled_departure <= ` + d_time +  `
+      main_flight_id IN
+        (SELECT flight_id
+          FROM flights
+          WHERE
+            "` + seat_type +  `" >= ` + total_ticket_cnt + ` 
+            AND 
+            movie = '` + movie + `'
+            AND
+            meal = '` + meal + `')`;}
+
+    var new_flight_list = await pool.query(new_flight_list_str);
+    res.json(new_flight_list.rows);
+    console.log(new_flight_list.rows);
   } catch (err) { console.log(err.message); }
 });
-//Send payment data to db
+
 app.post('/flights', async (req, res) => {
   try {
     var fname = req.param('fname');
-
     var email = req.param('email');
     var cardNum = req.param('cardNum');
     var total_amount = req.param('total_amount');
@@ -117,12 +138,14 @@ app.post('/flights', async (req, res) => {
     var custNames = req.param('custName');
     var fare_condition = req.param('fare_cond');
     var flight_id = req.param('flight_id');
+    var flight_id_2 = req.param('flight_id_2');
+    var route_id = req.param('route_id');
 
     var seat_type = '';
 
-    const cust_id = generate_customer_id();
+    var cust_id = generate_customer_id();
 
-    const book_ref_temp = generate_book_ref();
+    var book_ref_temp = generate_book_ref();
 
     let group_travel_bool = '0';
 
@@ -135,16 +158,12 @@ app.post('/flights', async (req, res) => {
     var boarding_no = generate_boarding_no();
     seat_no = generate_seat_no();
 
-
     queryCust = `INSERT INTO tickets 
     VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
 
     queryCust += `INSERT INTO ticket_flights
     VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
 
-    queryCust += `INSERT INTO boarding_passes
-    VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
-  
     queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
 
     for (i = 0; i < groupCnt - 1; i++) {
@@ -159,12 +178,21 @@ app.post('/flights', async (req, res) => {
       queryCust += `INSERT INTO ticket_flights
       VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
 
-      queryCust += `INSERT INTO boarding_passes
-      VALUES ('` + ticket_no +  `','` + flight_id +  `','` + boarding_no +  `','` + seat_no +  `');`;
-    
+      if (flight_id_2 != -1) 
+      { 
+        queryCust += `INSERT INTO ticket_flights
+        VALUES ('` + ticket_no +  `','` + flight_id_2 + `','` + fare_condition +  `');`;
+      }
+
       queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
+      
+      if (flight_id_2 != -1)
+      {
+        queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` +  seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id_2 + `;`;
+      }
     }
-    let paymentPostString= `
+
+    let paymentPostString = `
     BEGIN;
       INSERT INTO payment 
         VALUES(${cardNum}, ${tax}, 15, ${total_amount});
@@ -173,7 +201,7 @@ app.post('/flights', async (req, res) => {
       VALUES  ('` + book_ref_temp + `', CURRENT_TIMESTAMP, cast(${total_amount} as NUMERIC(10,2)));
       
       INSERT INTO customer 
-        VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `');
+        VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `', '` + route_id + `');
 
       ` + queryCust + `
         COMMIT;`;

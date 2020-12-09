@@ -422,24 +422,21 @@ div#result-display {
 	border: none;
 }
 div#admincontainer {
-    margin: auto;
-    position: relative;
-    width: min-content;
-    padding-bottom: 2%;
+    width: 100%;
 }
 
 button#submit-admin-btn {
-    padding: 4%;
-    position: relative;
+    /* padding: 4%; */
+    /* position: relative; */
     border: none;
     background-color: red;
-    transform: translateX(95%);
+    /* transform: translateX(95%); */
     font-weight: bold;
 }
 
-#loginform{
+/* #loginform{
 	margin-bottom: 5%;
-}
+} */
 
 #btn-admin-back {
 	border: none;
