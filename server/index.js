@@ -53,10 +53,10 @@ app.get('/flights', async (req, res) => {
         intermediate_flight_id,
         scheduled_departure,
         scheduled_arrival
-      FROM routes
+      FROM a7i743.routes
       WHERE main_flight_id IN
         (SELECT flight_id
-          FROM flights
+          FROM a7i743.flights
           WHERE
             "` + seat_type + `" >= ` + total_ticket_cnt + ` 
             AND 
@@ -74,14 +74,14 @@ app.get('/flights', async (req, res) => {
         intermediate_flight_id,
         scheduled_departure,
         scheduled_arrival
-      FROM routes
-      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      FROM a7i743.routes
+      WHERE a7i743.routes.departure_airport = ` + `'` + d_loc + `'
       AND
-      routes.arrival_airport = ` + `'` + a_loc + `'
+      a7i743.routes.arrival_airport = ` + `'` + a_loc + `'
       AND
       main_flight_id IN
         (SELECT flight_id
-          FROM flights
+          FROM a7i743.flights
           WHERE
             "` + seat_type + `" >= ` + total_ticket_cnt + ` 
             AND 
@@ -100,17 +100,17 @@ app.get('/flights', async (req, res) => {
         intermediate_flight_id,
         scheduled_departure,
         scheduled_arrival
-      FROM routes
-      WHERE routes.departure_airport = ` + `'` + d_loc + `'
+      FROM a7i743.routes
+      WHERE a7i743.routes.departure_airport = ` + `'` + d_loc + `'
       AND
-      routes.arrival_airport = ` + `'` + a_loc + `'
+      a7i743.routes.arrival_airport = ` + `'` + a_loc + `'
       AND
       scheduled_arrival >= ` + a_time + `
       AND
       scheduled_departure <= ` + d_time + `
       main_flight_id IN
         (SELECT flight_id
-          FROM flights
+          FROM a7i743.flights
           WHERE
             "` + seat_type + `" >= ` + total_ticket_cnt + ` 
             AND 
@@ -164,16 +164,16 @@ app.post('/flights', async (req, res) => {
     var boarding_no = generate_boarding_no();
     seat_no = generate_seat_no();
 
-    queryCust = `INSERT INTO tickets 
+    queryCust = `INSERT INTO a7i743.tickets 
     VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `','` + seat_no + `');`;
 
-    queryCust += `INSERT INTO passenger_check_in
+    queryCust += `INSERT INTO a7i743.passenger_check_in
     VALUES ('` + ticket_no + `', 'NOTCHECKED',` + 0 + `);`;
 
-    queryCust += `INSERT INTO ticket_flights
+    queryCust += `INSERT INTO a7i743.ticket_flights
     VALUES ('` + ticket_no + `','` + flight_id + `','` + fare_condition + `');`;
 
-    queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
+    queryCust += `UPDATE a7i743.flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
 
     for (i = 0; i < groupCnt - 1; i++) {
       ticket_no = generate_ticket_no();
@@ -181,36 +181,36 @@ app.post('/flights', async (req, res) => {
       seat_no = generate_seat_no();
       boarding_no = generate_boarding_no();
 
-      queryCust += `INSERT INTO tickets 
+      queryCust += `INSERT INTO a7i743.tickets 
       VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `','` + seat_no + `');`;
 
-      queryCust += `INSERT INTO passenger_check_in
+      queryCust += `INSERT INTO a7i743.passenger_check_in
       VALUES ('` + ticket_no + `',` + 'NOTCHECKED' + `,` + 0 + `);`;
 
-      queryCust += `INSERT INTO ticket_flights
+      queryCust += `INSERT INTO a7i743.ticket_flights
       VALUES ('` + ticket_no + `','` + flight_id + `','` + fare_condition + `');`;
 
       if (flight_id_2 != -1) {
-        queryCust += `INSERT INTO ticket_flights
+        queryCust += `INSERT INTO a7i743.ticket_flights
         VALUES ('` + ticket_no + `','` + flight_id_2 + `','` + fare_condition + `');`;
       }
 
-      queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
+      queryCust += `UPDATE a7i743.flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id + `;`;
 
       if (flight_id_2 != -1) {
-        queryCust += `UPDATE flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id_2 + `;`;
+        queryCust += `UPDATE a7i743.flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id_2 + `;`;
       }
     }
 
     let paymentPostString = `
     BEGIN;
-      INSERT INTO payment 
+      INSERT INTO a7i743.payment 
         VALUES(${cardNum}, ${tax}, 15, ${total_amount});
       
-      INSERT INTO bookings 
+      INSERT INTO a7i743.bookings 
       VALUES  ('` + book_ref_temp + `', CURRENT_TIMESTAMP, cast(${total_amount} as NUMERIC(10,2)));
       
-      INSERT INTO customer 
+      INSERT INTO a7i743.customer 
         VALUES (${cust_id}, '` + fname + `' , ${phoneNumber},'` + email + `', '` + book_ref_temp + `', '` + group_travel_bool + `', '` + cardNum + `', '` + route_id + `');
 
       ` + queryCust + `
@@ -238,7 +238,7 @@ app.get('/admin', async (req, res) => {
       departure_airport,
       arrival_airport,
       status
-    FROM flights
+    FROM a7i743.flights
     ORDER BY flight_id;      
     `; 
     const query_result = await pool.query(query_str);
@@ -254,7 +254,7 @@ app.get('/admininfo', async (req, res) => {
         ticket_no,
         boarding_no,
         seat_no
-      FROM boarding_passes
+      FROM a7i743.boarding_passes
       WHERE flight_id = '` + flight_id + `';
     `;
 
@@ -270,7 +270,7 @@ app.get('/displaybookings', async (req, res) => {
         book_ref,
         book_date,
         total_amount
-      FROM bookings;
+      FROM a7i743.bookings;
     `;
 
     const query_result = await pool.query(query_str);
@@ -296,11 +296,11 @@ app.delete('/flights/:fullName', async (req, res) => {
   try {
     const { fullName } = req.param;
 
-    let deleteCustomerString = `DELETE FROM boarding_passes 
-    WHERE boarding_passes.ticket_no
-      IN (SELECT tickets.ticket_no
-          FROM tickets
-            WHERE tickets.passenger_name = ${fullName})
+    let deleteCustomerString = `DELETE FROM a7i743.boarding_passes 
+    WHERE a7i743.boarding_passes.ticket_no
+      IN (SELECT a7i743.tickets.ticket_no
+          FROM a7i743.tickets
+            WHERE a7i743.tickets.passenger_name = ${fullName})
     `;
     const deleteCustomer = await pool.query(deleteCustomerString);
     res.json(`${fullName} was deleted!`);
@@ -312,37 +312,37 @@ app.delete('/deleteboarding', async (req, res) => {
     const book_ref = req.param('book_ref');
     const query_str = `
     BEGIN;
-      DELETE FROM ticket_flights
+      DELETE FROM a7i743.ticket_flights
       WHERE ticket_no IN
         (
           SELECT ticket_no
-          FROM tickets
+          FROM a7i743.tickets
           WHERE book_ref = '` + book_ref +  `'
         );
 
-      DELETE FROM passenger_check_in
+      DELETE FROM a7i743.passenger_check_in
       WHERE ticket_no IN
       (
         SELECT ticket_no
-        FROM tickets
+        FROM a7i743.tickets
         WHERE book_ref = '` + book_ref +  `'
       );
 
-      DELETE FROM tickets
+      DELETE FROM a7i743.tickets
       WHERE book_ref = '` + book_ref + `';
 
-      DELETE FROM payment
+      DELETE FROM a7i743.payment
       WHERE card_number IN
       (
         SELECT card_number
-        FROM customer
+        FROM a7i743.customer
         WHERE book_ref = '` + book_ref + `'
       );
 
-      DELETE FROM customer
+      DELETE FROM a7i743.customer
       WHERE book_ref = '` + book_ref + `';
 
-      DELETE FROM bookings
+      DELETE FROM a7i743.bookings
       WHERE book_ref = '` + book_ref + `';
     COMMIT;`;
     const deleteBooking = await pool.query(query_str);
@@ -358,19 +358,19 @@ app.get('/checkin/list', async (req, res) => {
     if (ticket_id !== "")
     {
       query_str = `
-        SELECT DISTINCT flights.flight_id,
-          flights.scheduled_departure,
-          flights.scheduled_arrival,
-          tickets.passenger_name,
-          tickets.seat_no
-        FROM tickets
-        INNER JOIN flights
+        SELECT DISTINCT a7i743.flights.flight_id,
+        a7i743.flights.scheduled_departure,
+        a7i743.flights.scheduled_arrival,
+        a7i743.tickets.passenger_name,
+        a7i743.tickets.seat_no
+        FROM a7i743.tickets
+        INNER JOIN a7i743.flights
         ON (
           SELECT flight_id
-          FROM ticket_flights
+          FROM a7i743.ticket_flights
             WHERE ticket_no = '` + ticket_id + `'
-        ) = flights.flight_id
-        WHERE tickets.ticket_no = '` + ticket_id + `'
+        ) = a7i743.flights.flight_id
+        WHERE a7i743.tickets.ticket_no = '` + ticket_id + `'
           ORDER BY flight_id;
       `;
       const boarding_list = await pool.query(query_str);
@@ -392,18 +392,18 @@ app.post('/checkin', async (req, res) => {
 
     const queryStr = `
     BEGIN;
-      UPDATE passenger_check_in
+      UPDATE a7i743.passenger_check_in
       SET
         luggage_count = ` + luggage_cnt + `,
         passenger_status = 'CHECKED'
       WHERE ticket_no = '` + ticket_id + `';
       
-      INSERT INTO passenger_boarding
+      INSERT INTO a7i743.passenger_boarding
         VALUES (
           '` + ticket_id + `', 'NOTBOARDED'
         );
 
-      INSERT INTO boarding_passes
+      INSERT INTO a7i743.boarding_passes
           VALUES (
             '` + ticket_id + `','`
             + flight_id + `','
@@ -419,7 +419,7 @@ app.post('/checkin', async (req, res) => {
       flight_id, 
       boarding_no, 
       seat_no
-    FROM boarding_passes
+    FROM a7i743.boarding_passes
     WHERE ticket_no = '` + ticket_id + `'
     ;`;
 
@@ -429,6 +429,45 @@ app.post('/checkin', async (req, res) => {
   }
   catch (err) {res.json("Error! Check your input!");}
 })
+
+app.post('/refundCustomer', async (req, res) => {
+  try {
+    var cust_id = req.param('cust_id');
+
+    console.log(cust_id);
+
+    const query_str = `
+      BEGIN;
+        DELETE FROM a7i743.ticket_flights
+        WHERE ticket_no IN
+        (
+          SELECT ticket_no
+          FROM a7i743.tickets
+          WHERE book_ref = (SELECT book_ref FROM a7i743.customer
+                              WHERE customer_id = '` + cust_id + `')
+        );
+
+        DELETE FROM a7i743.passenger_check_in
+        WHERE ticket_no IN
+        (
+          SELECT ticket_no
+          FROM a7i743.tickets
+          WHERE book_ref = (SELECT book_ref FROM a7i743.customer
+                              WHERE customer_id = '` + cust_id + `')
+        );
+
+      DELETE FROM a7i743.tickets
+      WHERE book_ref = '` + book_ref + `';
+
+      COMMIT;
+    `;
+    const query_result = await pool.query(query_str);
+    res.json("Refund has successfully been processed!");
+  } catch(err) {
+    console.log(err.message);
+    res.json("Refund failed to be processed!");
+  }
+});
 
 app.listen(5000, () => {
   console.log("server has started on port 5000");
@@ -442,11 +481,7 @@ function generate_customer_id() {
   customer_id += 1;
   let cust_id_str = customer_id.toString();
 
-  let str_num_temp = '';
-  for (i = 0; i < 8 - cust_id_str.length; i++) {
-    str_num_temp += '0';
-  }
-  return str_num_temp + cust_id_str;
+  return cust_id_str;
 }
 
 function generate_book_ref() {
@@ -466,7 +501,7 @@ function generate_ticket_no() {
   ticket_no_new = getRandomInt(9999999999999);
 
   try {
-    let generateTicketString = 'SELECT ticket_no FROM tickets;';
+    let generateTicketString = 'SELECT ticket_no FROM a7i743.tickets;';
     const ticket_nos = pool.query(generateTicketString);
     // fs.appendFile('Query.sql', generateTicketString, function (err) {
     //   if (err) throw err;
@@ -483,7 +518,7 @@ function generate_passenger_id() {
   var passenger_id_new = 0;
   passenger_id = getRandomInt(99999999999999999999);
   try {
-    let generatePassengerStr = 'SELECT passenger_id FROM tickets;';
+    let generatePassengerStr = 'SELECT passenger_id FROM a7i743.tickets;';
     const passenger_ids = pool.query(generatePassengerStr)
     // fs.appendFile('Query.sql', generatePassengerStr, function (err) {
     //   if (err) throw err;
@@ -502,7 +537,7 @@ function generate_seat_no()
   var seat_no_new = getRandomInt(999);
 
   try {
-    let generateSeatStr='SELECT seat_no FROM tickets;';
+    let generateSeatStr='SELECT seat_no FROM a7i743.tickets;';
     const seat_nos = pool.query(generateSeatStr);
 
     // fs.appendFile('Query.sql', generateSeatStr, function (err) {
@@ -526,7 +561,7 @@ function generate_seat_no()
 function generate_boarding_no() {
   var boarding_no_new = getRandomInt(99999999);
   try {
-    let generateBoardingStr = 'SELECT boarding_no FROM boarding_passes;';
+    let generateBoardingStr = 'SELECT boarding_no FROM a7i743.boarding_passes;';
     const boarding_nos = pool.query(generateBoardingStr)
     // fs.appendFile('Query.sql', generateBoardingStr, function (err) {
     //   if (err) throw err;
@@ -550,46 +585,50 @@ function getRandomArbitrary(min, max) {
 }
 
 var resetStr = `
+SET SCHEMA 'a7i743';
+
 BEGIN;
-DROP TABLE IF EXISTS airport CASCADE;
+SET SCHEMA 'a7i743';
 
-DROP TABLE IF EXISTS boarding_passes CASCADE;
+DROP TABLE IF EXISTS a7i743.airport CASCADE;
 
-DROP TABLE IF EXISTS seats CASCADE;
+DROP TABLE IF EXISTS a7i743.boarding_passes CASCADE;
 
-DROP TABLE IF EXISTS aircraft CASCADE;
+DROP TABLE IF EXISTS a7i743.seats CASCADE;
 
-DROP TABLE IF EXISTS tickets CASCADE;
+DROP TABLE IF EXISTS a7i743.aircraft CASCADE;
 
-DROP TABLE IF EXISTS ticket_flights CASCADE;
+DROP TABLE IF EXISTS a7i743.tickets CASCADE;
 
-DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS a7i743.ticket_flights CASCADE;
 
-DROP TABLE IF EXISTS flights CASCADE;
+DROP TABLE IF EXISTS a7i743.bookings CASCADE;
 
-DROP TABLE IF EXISTS aircraft CASCADE;
+DROP TABLE IF EXISTS a7i743.flights CASCADE;
 
-DROP TABLE IF EXISTS customer CASCADE;
+DROP TABLE IF EXISTS a7i743.aircraft CASCADE;
 
-DROP TABLE IF EXISTS passenger_boarding CASCADE;
+DROP TABLE IF EXISTS a7i743.customer CASCADE;
 
-DROP TABLE IF EXISTS passenger_check_in CASCADE;
+DROP TABLE IF EXISTS a7i743.passenger_boarding CASCADE;
 
-DROP TABLE IF EXISTS payment CASCADE;
+DROP TABLE IF EXISTS a7i743.passenger_check_in CASCADE;
 
-DROP TABLE IF EXISTS routes CASCADE;
+DROP TABLE IF EXISTS a7i743.payment CASCADE;
+
+DROP TABLE IF EXISTS a7i743.routes CASCADE;
 
 /*create tables*/
-CREATE TABLE aircraft(
+CREATE TABLE a7i743.aircraft(
     aircraft_code char(3),
     model char(25),
     RANGE integer,
     PRIMARY KEY(aircraft_code),
-    CONSTRAINT "flights_aircraft_code_fkey" FOREIGN KEY (aircraft_code) REFERENCES aircraft(aircraft_code),
-    CONSTRAINT "seats_aircraft_code_fkey" FOREIGN KEY (aircraft_code) REFERENCES aircraft(aircraft_code) ON DELETE CASCADE
+    CONSTRAINT "flights_aircraft_code_fkey" FOREIGN KEY (aircraft_code) REFERENCES a7i743.aircraft(aircraft_code),
+    CONSTRAINT "seats_aircraft_code_fkey" FOREIGN KEY (aircraft_code) REFERENCES a7i743.aircraft(aircraft_code) ON DELETE CASCADE
 );
 
-CREATE TABLE airport (
+CREATE TABLE a7i743.airport (
     airport_code char(3) NOT NULL,
     airport_name char(40),
     city char(20),
@@ -598,7 +637,7 @@ CREATE TABLE airport (
     PRIMARY KEY (airport_code)
 );
 
-CREATE TABLE flights (
+CREATE TABLE a7i743.flights (
     flight_id integer NOT NULL,
     flight_no character(6) NOT NULL,
     scheduled_departure timestamp WITH time zone NOT NULL,
@@ -617,9 +656,9 @@ CREATE TABLE flights (
     meal character(1) NOT NULL,
 
     PRIMARY KEY (flight_id),
-    CONSTRAINT flights_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES aircraft(aircraft_code),
-    CONSTRAINT flights_arrival_airport_fkey FOREIGN KEY (arrival_airport) REFERENCES airport(airport_code),
-    CONSTRAINT flights_departure_airport_fkey FOREIGN KEY (departure_airport) REFERENCES airport(airport_code),
+    CONSTRAINT flights_aircraft_code_fkey FOREIGN KEY (aircraft_code) REFERENCES a7i743.aircraft(aircraft_code),
+    CONSTRAINT flights_arrival_airport_fkey FOREIGN KEY (arrival_airport) REFERENCES a7i743.airport(airport_code),
+    CONSTRAINT flights_departure_airport_fkey FOREIGN KEY (departure_airport) REFERENCES a7i743.airport(airport_code),
     CONSTRAINT flights_check CHECK ((scheduled_arrival > scheduled_departure)),
 
     CONSTRAINT flights_status_check CHECK (
@@ -645,7 +684,7 @@ CREATE TABLE flights (
     )
 );
 
-CREATE TABLE routes (
+CREATE TABLE a7i743.routes (
     route_id character(10) NOT NULL,
     arrival_airport character(3) NOT NULL,
     departure_airport character(3) NOT NULL,
@@ -656,53 +695,53 @@ CREATE TABLE routes (
     main_flight_id integer NOT NULL,
     intermediate_flight_id integer NOT NULL,
     PRIMARY KEY (route_id),
-    CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
-    CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES airport(airport_code) ON DELETE CASCADE,
-    CONSTRAINT main_flight_id FOREIGN KEY (main_flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE
+    CONSTRAINT routes_arrival_airport FOREIGN KEY  (arrival_airport) REFERENCES a7i743.airport(airport_code) ON DELETE CASCADE,
+    CONSTRAINT routes_departure_airport FOREIGN KEY  (departure_airport) REFERENCES a7i743.airport(airport_code) ON DELETE CASCADE,
+    CONSTRAINT main_flight_id FOREIGN KEY (main_flight_id) REFERENCES a7i743.flights(flight_id) ON DELETE CASCADE
 );
 
-CREATE TABLE bookings (
+CREATE TABLE a7i743.bookings (
     book_ref character(6) NOT NULL,
     book_date timestamp WITH time zone NOT NULL,
     total_amount numeric(10, 2) NOT NULL,
     PRIMARY KEY(book_ref)
 );
 
-CREATE TABLE tickets(
+CREATE TABLE a7i743.tickets(
     ticket_no char(13) NOT NULL,
     book_ref character(6) NOT NULL,
     passenger_id varchar(20) NOT NULL,
     passenger_name text NOT NULL,
     seat_no character varying(4) NOT NULL,
     PRIMARY KEY (ticket_no),
-    CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
-    CONSTRAINT "passenger_check_in_ticket_no" FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no),
-    CONSTRAINT "passenger_boarding_ticket_no" FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
+    CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES a7i743.bookings(book_ref),
+    CONSTRAINT "passenger_check_in_ticket_no" FOREIGN KEY (ticket_no) REFERENCES a7i743.tickets(ticket_no),
+    CONSTRAINT "passenger_boarding_ticket_no" FOREIGN KEY (ticket_no) REFERENCES a7i743.tickets(ticket_no)
 );
 
-CREATE TABLE passenger_check_in(
+CREATE TABLE a7i743.passenger_check_in(
     ticket_no char(13) NOT NULL,
     passenger_status text NOT NULL,
     luggage_count integer NOT NULL,
     PRIMARY KEY (ticket_no),
-    CONSTRAINT passenger_check_in_ticket_no FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
+    CONSTRAINT passenger_check_in_ticket_no FOREIGN KEY (ticket_no) REFERENCES a7i743.tickets(ticket_no)
 );
 
-CREATE TABLE passenger_boarding(
+CREATE TABLE a7i743.passenger_boarding(
     ticket_no char(13) NOT NULL,
     passenger_status text NOT NULL,
     PRIMARY KEY (ticket_no),
-    CONSTRAINT passenger_boarding_ticket_no FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
+    CONSTRAINT passenger_boarding_ticket_no FOREIGN KEY (ticket_no) REFERENCES a7i743.tickets(ticket_no)
 );
 
-CREATE TABLE ticket_flights (
+CREATE TABLE a7i743.ticket_flights (
     ticket_no character(13) NOT NULL,
     flight_id integer NOT NULL,
     fare_conditions character varying(10) NOT NULL,
     PRIMARY KEY (ticket_no, flight_id),
-    CONSTRAINT "boarding_passes_ticket_no_fkey" FOREIGN KEY (ticket_no, flight_id) REFERENCES ticket_flights(ticket_no, flight_id),
-    CONSTRAINT ticket_flights_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES flights(flight_id),
-    CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no),
+    CONSTRAINT "boarding_passes_ticket_no_fkey" FOREIGN KEY (ticket_no, flight_id) REFERENCES a7i743.ticket_flights(ticket_no, flight_id),
+    CONSTRAINT ticket_flights_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES a7i743.flights(flight_id),
+    CONSTRAINT ticket_flights_ticket_no_fkey FOREIGN KEY (ticket_no) REFERENCES a7i743.tickets(ticket_no),
     CONSTRAINT ticket_flights_fare_conditions_check CHECK (
         (
             (fare_conditions)::text = ANY (
@@ -712,16 +751,16 @@ CREATE TABLE ticket_flights (
     )
 );
 
-CREATE TABLE boarding_passes (
+CREATE TABLE a7i743.boarding_passes (
     ticket_no character(13) NOT NULL,
     flight_id integer NOT NULL,
     boarding_no integer NOT NULL,
     seat_no character varying(4) NOT NULL,
     PRIMARY KEY(ticket_no, flight_id),
-    CONSTRAINT boarding_passes_ticket_no_fkey FOREIGN KEY (ticket_no, flight_id) REFERENCES ticket_flights(ticket_no, flight_id)
+    CONSTRAINT boarding_passes_ticket_no_fkey FOREIGN KEY (ticket_no, flight_id) REFERENCES a7i743.ticket_flights(ticket_no, flight_id)
 );
 
-CREATE TABLE payment (
+CREATE TABLE a7i743.payment (
     card_number character(16) NOT NULL,
     taxes integer NOT NULL,
     discount integer NOT NULL,
@@ -729,7 +768,7 @@ CREATE TABLE payment (
     PRIMARY KEY (card_number)
 );
 
-CREATE TABLE customer (
+CREATE TABLE a7i743.customer (
     customer_id character(8) NOT NULL,
     customer_name character(25) NOT NULL,
     customer_telephone character(10) NOT NULL,
@@ -740,12 +779,12 @@ CREATE TABLE customer (
     route_id character(10) NOT NULL,
 
     PRIMARY KEY (customer_id),
-    CONSTRAINT customer_book_ref FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
-    CONSTRAINT customer_card_number FOREIGN KEY (card_number) REFERENCES payment(card_number) ON DELETE CASCADE
+    CONSTRAINT customer_book_ref FOREIGN KEY (book_ref) REFERENCES a7i743.bookings(book_ref),
+    CONSTRAINT customer_card_number FOREIGN KEY (card_number) REFERENCES a7i743.payment(card_number) ON DELETE CASCADE
 );
 
 
-CREATE TABLE seats (
+CREATE TABLE a7i743.seats (
     aircraft_code character(3) NOT NULL,
     seat_no character varying(4) NOT NULL,
     fare_conditions character varying(10) NOT NULL,
@@ -760,7 +799,7 @@ CREATE TABLE seats (
     )
 );
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES (
         'HOU',
         'George Bush Airport',
@@ -769,7 +808,7 @@ VALUES (
         'CT'
     );
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES (
         'JFK',
         'John F Kennedy Airport',
@@ -778,7 +817,7 @@ VALUES (
         'ET'
     );
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES (
         'LAX',
         'Los Angeles Airport',
@@ -787,7 +826,7 @@ VALUES (
         'PT'
     );
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES (
         'PVG',
         'Shanghai Pudong International Airport',
@@ -796,28 +835,28 @@ VALUES (
         'CST'
         );
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES ('ORD', 'O Hare Airport', 'Chicago', NULL, 'CT');
 
-INSERT INTO airport
+INSERT INTO a7i743.airport
 VALUES ('MIA', 'Miami Airport', 'Miami', NULL, 'ET');
 
-INSERT INTO aircraft
+INSERT INTO a7i743.aircraft
 VALUES ('773', 'Boeing 777-300', 11100);
 
-INSERT INTO aircraft
+INSERT INTO a7i743.aircraft
 VALUES ('763', 'Boeing 767-300', 7900);
 
-INSERT INTO aircraft
+INSERT INTO a7i743.aircraft
 VALUES ('SU9', 'Boeing 777-300', 5700);
 
-INSERT INTO aircraft
+INSERT INTO a7i743.aircraft
 VALUES ('320', 'Boeing 777-300', 6400);
 
-INSERT INTO aircraft
+INSERT INTO a7i743.aircraft
 VALUES ('321', 'Boeing 777-300', 6100);
 
-INSERT INTO flights
+INSERT INTO a7i743.flights
 VALUES (
        1001,
        'PG0010',
@@ -837,7 +876,7 @@ VALUES (
         '1'
    );
 
-INSERT INTO flights
+INSERT INTO a7i743.flights
 VALUES (
      1002,
      'PG0020',
@@ -857,7 +896,7 @@ VALUES (
     '0'
    );
 
-INSERT INTO flights
+INSERT INTO a7i743.flights
 VALUES (
         1003,
         'PG0030',
@@ -877,7 +916,7 @@ VALUES (
         '1'
 );
 
-INSERT INTO routes
+INSERT INTO a7i743.routes
 VALUES (
     '1',
     'JFK',
@@ -890,7 +929,7 @@ VALUES (
     -1
 );
 
-INSERT INTO routes
+INSERT INTO a7i743.routes
 VALUES (
     '2',
     'JFK',
@@ -903,7 +942,7 @@ VALUES (
     -1
 );
 
-INSERT INTO routes
+INSERT INTO a7i743.routes
 VALUES (
         '3',
         'PVG',
@@ -916,9 +955,10 @@ VALUES (
         1003
        );
 
-INSERT INTO seats
+INSERT INTO a7i743.seats
 VALUES ('773', '001', 'Comfort');
 
-INSERT INTO seats
+INSERT INTO a7i743.seats
 VALUES ('773', '050', 'Economy');
+
 COMMIT;`;
