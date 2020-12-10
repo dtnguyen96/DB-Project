@@ -263,6 +263,22 @@ app.get('/admininfo', async (req, res) => {
   } catch(err) {console.log(err.message);}
 });
 
+app.get('/displaybookings', async (req, res) => {
+  try{
+    const query_str = `
+      SELECT
+        book_ref,
+        book_date,
+        total_amount
+      FROM bookings;
+    `;
+
+    const query_result = await pool.query(query_str);
+    console.log(query_result.rows);
+    res.json(query_result.rows);
+  } catch(err) {console.log(err.message);}
+})
+
 app.post('/reset', async (req, res) => {
   try {
     console.log('Reseting...');
@@ -290,6 +306,49 @@ app.delete('/flights/:fullName', async (req, res) => {
     res.json(`${fullName} was deleted!`);
   } catch (err) { res.json("Error! Check your input!");}
 });
+
+app.delete('/deleteboarding', async (req, res) => {
+  try{
+    const book_ref = req.param('book_ref');
+    const query_str = `
+    BEGIN;
+      DELETE FROM ticket_flights
+      WHERE ticket_no IN
+        (
+          SELECT ticket_no
+          FROM tickets
+          WHERE book_ref = '` + book_ref +  `'
+        );
+
+      DELETE FROM passenger_check_in
+      WHERE ticket_no IN
+      (
+        SELECT ticket_no
+        FROM tickets
+        WHERE book_ref = '` + book_ref +  `'
+      );
+
+      DELETE FROM tickets
+      WHERE book_ref = '` + book_ref + `';
+
+      DELETE FROM payment
+      WHERE card_number IN
+      (
+        SELECT card_number
+        FROM customer
+        WHERE book_ref = '` + book_ref + `'
+      );
+
+      DELETE FROM customer
+      WHERE book_ref = '` + book_ref + `';
+
+      DELETE FROM bookings
+      WHERE book_ref = '` + book_ref + `';
+    COMMIT;`;
+    const deleteBooking = await pool.query(query_str);
+    res.json('Refund has been processed!');
+  } catch(err) {console.log(err.message);}
+})
 
 app.get('/checkin/list', async (req, res) => {
   try {
@@ -512,9 +571,9 @@ DROP TABLE IF EXISTS aircraft CASCADE;
 
 DROP TABLE IF EXISTS customer CASCADE;
 
-DROP TABLE IF EXISTS customer_boarding CASCADE;
+DROP TABLE IF EXISTS passenger_boarding CASCADE;
 
-DROP TABLE IF EXISTS customer_check_in CASCADE;
+DROP TABLE IF EXISTS passenger_check_in CASCADE;
 
 DROP TABLE IF EXISTS payment CASCADE;
 
@@ -614,8 +673,26 @@ CREATE TABLE tickets(
     book_ref character(6) NOT NULL,
     passenger_id varchar(20) NOT NULL,
     passenger_name text NOT NULL,
+    seat_no character varying(4) NOT NULL,
     PRIMARY KEY (ticket_no),
-    CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES bookings(book_ref)
+    CONSTRAINT tickets_book_ref_fkey FOREIGN KEY (book_ref) REFERENCES bookings(book_ref),
+    CONSTRAINT "passenger_check_in_ticket_no" FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no),
+    CONSTRAINT "passenger_boarding_ticket_no" FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
+);
+
+CREATE TABLE passenger_check_in(
+    ticket_no char(13) NOT NULL,
+    passenger_status text NOT NULL,
+    luggage_count integer NOT NULL,
+    PRIMARY KEY (ticket_no),
+    CONSTRAINT passenger_check_in_ticket_no FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
+);
+
+CREATE TABLE passenger_boarding(
+    ticket_no char(13) NOT NULL,
+    passenger_status text NOT NULL,
+    PRIMARY KEY (ticket_no),
+    CONSTRAINT passenger_boarding_ticket_no FOREIGN KEY (ticket_no) REFERENCES tickets(ticket_no)
 );
 
 CREATE TABLE ticket_flights (

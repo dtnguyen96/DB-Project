@@ -160,9 +160,7 @@
 		<div id="sql-statment-container"> 
 			<button id="sql-btn"> SQL Script </button>
 		</div>
-		<form action="/client/checkinweb.html" method="POST">
-			<input type="submit" value="check in"/>
-		</form>
+		<input type="button" onclick="location.href='checkinweb.html';" value="check in"/>
 						</form>
 					</div>
 				</div>
@@ -290,19 +288,20 @@
 				  <table id='result-display-table'></table>
 			  </div>
 			</div>
-		  <div id='bottom'>
+		<div id='bottom'>
 			<div class='btn'>
 				<button class='btn-admin' id='delete-btn'>Delete</button>
 				<input type='text'>
-			  </div>
-			  <div class='btn'>
+
 				<button class='btn-admin' id='refund-btn'>Refund Booking</button>
-				<input type='text'>
-				<div class='btn'>
-					<button class='btn-admin' id='reset-btn'>Reset Database</button>
-			    </div>
-			  <button id='btn-admin-back'>Back</button>
-		  </div>
+				<input type='text' id='refund_value'>
+
+				<button class='btn-admin' id='reset-btn'>Reset Database</button>
+
+				<button id='btn-admin-back'>Back</button>
+
+				<button id='display-bookings'>Display Bookings</button>
+			</div>
 	</div>
 
 	<script src="js/jquery.min.js"></script>

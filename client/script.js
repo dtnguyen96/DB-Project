@@ -149,6 +149,16 @@ async function loadFlightsAdmin() {
     } catch(err) {console.log(err.message);}
 }
 
+async function loadBookings() {
+    try{
+        const response = await fetch('http://localhost:5000/displaybookings');
+        const jsonData = await response.json();
+
+        flight_info_storage = jsonData;
+        displayBookings();
+    } catch(err) {console.log(err.message);}
+}
+
 async function loadFlightInfoAdmin(flight_id) {
     try {
         const response = await fetch(`http://localhost:5000/admininfo/?flight_id=${flight_id}`);
@@ -157,6 +167,43 @@ async function loadFlightInfoAdmin(flight_id) {
         flight_info_storage = jsonData;
         displayFlightInfoAdmin();
     } catch(err) { console.log(err.message);}
+}
+
+async function deleteBooking() {
+    const book_ref = document.getElementById('refund_value').value;
+    console.log(book_ref);
+    const response = await fetch(`http://localhost:5000/deleteboarding/?book_ref=${book_ref}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+    });
+    const jsonData = response.json();
+    
+    // const info_table = document.getElementById('result-display-table');
+    // info_table.innerHTML = jsonData
+}
+
+const displayBookings = () => {
+    try {
+        const info_table = document.getElementById('result-display-table');
+        let tableHTML = `
+            <tr>
+                <th>Book Ref</th>
+                <th>Book Date</th>
+                <th>Total Amount</th>
+            </tr>
+        `;
+        if (flight_info_storage.length === 0) { info_table.innerHTML += "Query returned nothing";}
+        flight_info_storage.map(b_table => {
+            tableHTML += `
+                <tr>
+                    <th>${b_table.book_ref}</th>
+                    <th>${b_table.book_date}</th>
+                    <th>${b_table.total_amount}</th>
+                </tr>
+            `;
+        });
+        info_table.innerHTML = tableHTML;
+    } catch(err) {console.log(err.message);}
 }
 
 const displayFlightInfoAdmin = () => {
@@ -264,8 +311,6 @@ const displayCart = () => {
     }
 }
 
-
-
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
 var prev = document.getElementById('flight_back_btn');
@@ -281,6 +326,17 @@ var paymentSubmit=document.getElementById('payment-submit');
 
 var delete_btn = document.getElementById('delete-btn');
 
+var display_bookings_btn = document.getElementById('display-bookings');
+
+var refund_btn = document.getElementById('refund-btn');
+
+refund_btn.onclick = function() {
+    deleteBooking();
+}
+
+display_bookings_btn.onclick = function() {
+    loadBookings();
+}
 
 next.onclick = function (event) {
     fetchFlights();
