@@ -217,12 +217,12 @@ app.post('/flights', async (req, res) => {
         COMMIT;`;
     const newPayment = await pool.query(paymentPostString);
 
-    fs.writeFile('Transaction.sql', paymentPostString, (err) => {
-      if (err) throw err;
-    })
+    // fs.writeFile('Transaction.sql', paymentPostString, (err) => {
+    //   if (err) throw err;
+    // })
 
     console.log(newPayment.rows);
-    res.json("Success!");
+    res.json(ticket_no);
 
   } catch (err) {
     res.json("Error! Check your input!");

@@ -76,7 +76,7 @@
 							</div>
 							<div class="form-group">
 								<input class="form-control" type="text" id='flying_from'>
-								<span class="form-label">Flying from (EX: '')</span>
+								<span class="form-label">Flying from (EX: 'HOU')</span>
 							</div>
 							<div class="form-group">
 								<input class="form-control" type="text" id='flying_to'>
@@ -189,7 +189,7 @@
 			<button id="back_button2">Back</button>
 			<div class="col-75">
 			  <div class="container2">
-				<form action="http://localhost:5000/flights/">
+				<form action="http://localhost:5000/flights/" id='payment-form' method='POST'>
 		  
 				  <div class="row2">
 					<div class="col-50">
@@ -252,7 +252,8 @@
 				  <label>
 					<input type="checkbox" checked="checked" name="sameadr"> Shipping address same as billing
 				  </label>
-				  <input type="submit" id="payment-submit" value="Continue to checkout" class="btn">
+				  <button id='payment-submit' class='btn' type='button'>Continue to checkout</button>
+				  <!-- <input type="submit" id="payment-submit" value="Continue to checkout" class="btn"> -->
 				</form>
 			  </div>
 			</div>

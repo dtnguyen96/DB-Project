@@ -114,11 +114,12 @@ async function fetchPayment() {
         const jsonData = await response.json();
         var error_display = document.getElementById('error_display');
 
-        error_display.innerHTML = jsonData;
+        console.log(jsonData);
+
+        error_display.innerHTML = `Your ticket # is ${jsonData}, please save it!`;
 
         return false;
     } catch (err) { console.log(err.message); }
-    
 }
 
 const setFlights = (data) => {
@@ -330,6 +331,9 @@ var display_bookings_btn = document.getElementById('display-bookings');
 
 var refund_btn = document.getElementById('refund-btn');
 
+var payment_form = document.getElementById('payment-form');
+
+
 refund_btn.onclick = function() {
     deleteBooking();
 }
@@ -374,9 +378,9 @@ prev.onclick = function (event) {
     document.getElementById('error-msg').innerHTML = '';
 }
 
-paymentSubmit.onclick=function(event){
-    event.preventDefault();
+paymentSubmit.onclick=function(){
     fetchPayment();
+    return false;
 }
 
 admin_btn.onclick = function(){
