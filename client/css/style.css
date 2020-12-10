@@ -282,9 +282,8 @@ table#table_display .submit-btn {
 #result_container {
     background-color: white;
     width: 75%;
-    transform: translate(25%, 150%);
-	border: 1px solid lightgrey;
-	padding: 2%;
+    transform: translate(25%, 50%);
+    border: 1px solid lightgrey;
 }
 
 button#flight_back_btn {
@@ -358,7 +357,7 @@ button#back_button2 {
     overflow-x: hidden;
 }
   
-#list button {
+  #list button {
   display: block;
   margin: 0;
   }
@@ -379,7 +378,7 @@ button#back_button2 {
     height: 50%;
   }
 
-#admin-dashb {
+  #admin-dashb {
     width: 60%;
     transform: translateY(25%);
     margin: auto;
@@ -544,4 +543,118 @@ button#submit-admin-btn {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+
+
+
+
+
+
+
+#container_slide_check
+{
+	height: 100%;
+	width: 400%;
+	position: absolute;
+	transition: 1000ms;
+	left: 0;
+	top: 0;
+}
+
+#container_slide_check.list
+{
+	left: -100%;
+}
+
+#container_slide_check.list.bags
+{
+	left: -200%;
+}
+
+#container_slide_check.list.bags.tickets
+{
+	left: -300%;
+}
+
+#checkin_menu{
+	height: 100%;
+	width: 25%;
+	background-color: brown;
+	position: absolute;
+}
+
+#ticket_search{
+	border: 1px solid black;
+	background-color: white;
+	height: max-content;
+	text-align: center;
+	width: max-content;
+	margin: auto;
+	padding: 1%;
+	transform: translate(0,250%);
+}
+
+#checkin_list{
+	background-color: blue;
+	height: 100%;
+	width: 25%;
+	top: 0%;
+	right: 33.333%;
+	position: absolute;
+	/* right: 25%; */
+	left: 25%;
+}
+
+#ticket_results{
+	width: 100%;
+}
+
+#search_btn {
+    padding: 2%;
+    color: red;
+	text-align: center;
+	padding-top: 5%;
+}
+
+#luggage_title {
+	margin-bottom: 4%;
+}
+
+#checkin_luggage {
+	font-size: 150%;
+    width: 25%;
+    height: 50%;
+    text-align: center;
+    font-family: Montserrat, sans-serif;
+    position: absolute;
+    top: 0;
+    right: 25%;
+}
+
+#result_title {
+	margin-bottom: 4%;
+  }
+
+  #boardings {
+	width: 100%;
+  }
+
+#checkin_thankyou {
+	font-size: 150%;
+    width: 25%;
+    height: 50%;
+    text-align: center;
+    font-family: Montserrat, sans-serif;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#results {
+    background-color: white;
+    width: 75%;
+    transform: translate(25%, 150%);
+	border: 1px solid lightgrey;
+	padding: 2%;
 }

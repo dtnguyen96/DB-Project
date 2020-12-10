@@ -158,7 +158,10 @@ app.post('/flights', async (req, res) => {
     seat_no = generate_seat_no();
 
     queryCust = `INSERT INTO tickets 
-    VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
+    VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `','` + seat_no + `');`;
+
+    queryCust += `INSERT INTO passenger_check_in
+    VALUES ('` + ticket_no + `', 'NOTCHECKED',` + 0 + `);`;
 
     queryCust += `INSERT INTO ticket_flights
     VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
@@ -172,7 +175,10 @@ app.post('/flights', async (req, res) => {
       boarding_no = generate_boarding_no();
 
       queryCust += `INSERT INTO tickets 
-      VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `');`;
+      VALUES ('` + ticket_no + `','` + book_ref_temp + `','` + passenger_id + `','` + phoneNumber + `','` + seat_no + `');`;
+
+      queryCust += `INSERT INTO passenger_check_in
+      VALUES ('` + ticket_no + `',` + 'NOTCHECKED' + `,` + 0 + `);`;
 
       queryCust += `INSERT INTO ticket_flights
       VALUES ('` + ticket_no +  `','` + flight_id + `','` + fare_condition +  `');`;
@@ -227,9 +233,6 @@ app.post('/reset', async (req, res) => {
   }
 
 });
-app.listen(5000, () => {
-  console.log("server has started on port 5000");
-});
 
 app.delete('/flights/:fullName', async (req, res) => {
   try {
@@ -246,24 +249,73 @@ app.delete('/flights/:fullName', async (req, res) => {
   } catch (err) { console.log(err.message, err.lineNumber); }
 });
 
-app.post('/checkin/list', async (req, res) => {
+app.get('/checkin/list', async (req, res) => {
   try {
     const ticket_id = req.param('ticket_id');
     var query_str = '';
 
     if (ticket_id !== "")
     {
-      query_str = '
-      '
+      query_str = `
+        SELECT DISTINCT flights.flight_id,
+          flights.scheduled_departure,
+          flights.scheduled_arrival,
+          tickets.passenger_name,
+          tickets.seat_no
+        FROM tickets
+        INNER JOIN flights
+        ON (
+          SELECT flight_id
+          FROM ticket_flights
+            WHERE ticket_no = '` + ticket_id + `'
+        ) = flights.flight_id
+        WHERE tickets.ticket_no = '` + ticket_id + `'
+          ORDER BY flight_id;
+      `;
+      const boarding_list = await pool.query(query_str);
+      console.log('ticket search result:', boarding_list.rows);
+      res.json(boarding_list.rows);
     }
-
-
-    console.log(ticket_id);
   } catch (err) {console.log(err.message);}
 });
 
+app.post('/checkin', async (req, res) => {
+  try {
+    const ticket_id = req.param('ticket_id');
+    const luggage_cnt = req.param('luggage_cnt');
+    const boarding_no = generate_boarding_no();
+    const flight_id = req.param('flight_id');
+    const seat_no = req.param('seat_no');
 
+    const queryStr = `
+    BEGIN;
+      UPDATE passenger_check_in
+      SET
+        luggage_count = ` + luggage_cnt + `,
+        passenger_status = 'CHECKED'
+      WHERE ticket_no = '` + ticket_id + `';
+      
+      INSERT INTO passenger_boarding
+        VALUES (
+          '` + ticket_id + `', 'NOTBOARDED'
+        );
 
+      INSERT INTO boarding_passes
+          VALUES (
+            '` + ticket_id + `','`
+            + flight_id + `','
+            ` + boarding_no + `','`
+            + seat_no + `'
+          );
+    COMMIT;`;
+    const passenger_query = await pool.query(queryStr);
+  }
+  catch (err) {console.log(err.message);}
+})
+
+app.listen(5000, () => {
+  console.log("server has started on port 5000");
+});
 
 function isEmpty(str) {
   return (!str || 0 === str.length);
@@ -299,9 +351,9 @@ function generate_ticket_no() {
   try {
     let generateTicketString='SELECT ticket_no FROM tickets;';
     const ticket_nos = pool.query(generateTicketString);
-    fs.appendFile('Query.sql', generateTicketString, function (err) {
-      if (err) throw err;
-    });
+    // fs.appendFile('Query.sql', generateTicketString, function (err) {
+    //   if (err) throw err;
+    // });
     for (i = 0; i < ticket_nos.rows.length; i++) {
       var temp_json = JSON.parse(ticket_nos.rows[i]);
       if (temp_json.ticket_no === ticket_no_new) { ticket_no_new = getRandomInt(9999999999999); }
@@ -316,9 +368,9 @@ function generate_passenger_id() {
   try {
     let generatePassengerStr='SELECT passenger_id FROM tickets;';
     const passenger_ids = pool.query(generatePassengerStr)
-    fs.appendFile('Query.sql', generatePassengerStr, function (err) {
-      if (err) throw err;
-    });
+    // fs.appendFile('Query.sql', generatePassengerStr, function (err) {
+    //   if (err) throw err;
+    // });
     for (i = 0; i < passenger_ids.rows.length; i++) {
       var temp_json = JSON.parse(passenger_ids.rows[i]);
       if (temp_json.passenger_id === passenger_id_new) { passenger_id_new = getRandomInt(9999999999999); }
@@ -330,24 +382,24 @@ function generate_passenger_id() {
 
 function generate_seat_no()
 {
-  var seat_no_new = "";
-  var seat_letter = getRandomArbitrary(41,60);
-  var seat_num = getRandomInt(99);
-  seat_no_new = String.fromCharCode(seat_letter) + seat_num;
+  var seat_no_new = getRandomInt(999);
 
   try {
-    let generateSeatStr='SELECT seat_no FROM boarding_passes;';
-    const seat_nos = pool.query(generateSeatStr)
-    fs.appendFile('Query.sql', generateSeatStr, function (err) {
-      if (err) throw err;
-    });
+    let generateSeatStr='SELECT seat_no FROM tickets;';
+    const seat_nos = pool.query(generateSeatStr);
+
+    // fs.appendFile('Query.sql', generateSeatStr, function (err) {
+    //   if (err) throw err;
+    // });
+
+    if (seat_no.rows === undefined){ return seat_no_new;}
+
     for (i = 0; i < seat_nos.rows.length; i++) {
       var temp_json = JSON.parse(seat_nos.rows[i]);
       if (temp_json.seat_no === seat_no_new) {
         var seat_no_new = "";
-        var seat_letter = getRandomArbitrary(61-80);
         var seat_num = getRandomInt(99);
-        seat_no_new = String.fromCharCode(seat_letter) + seat_num;
+        seat_no_new = seat_num;
       }
     }
   } catch (err) { console.log(err.message); }
@@ -361,9 +413,9 @@ function generate_boarding_no()
   try{
     let generateBoardingStr='SELECT boarding_no FROM boarding_passes;';
     const boarding_nos = pool.query(generateBoardingStr)
-    fs.appendFile('Query.sql', generateBoardingStr, function (err) {
-      if (err) throw err;
-    });
+    // fs.appendFile('Query.sql', generateBoardingStr, function (err) {
+    //   if (err) throw err;
+    // });
     for (i = 0; i < boarding_nos.rows.length; i++) 
     {
       var temp_json = JSON.parse(boarding_nos.rows[i]);
