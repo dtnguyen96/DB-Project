@@ -3,13 +3,9 @@ const app = express();
 const cors = require('cors');
 const pool = require('./db');
 const { query } = require('./db');
-<<<<<<< HEAD
 const fs = require('fs');
 let sql_str='';
 // middleware
-=======
-const fs=require('fs');
->>>>>>> 555e9aef74033c54d2bd74728f7b91bbd56b36f8
 app.use(cors());
 app.use(express.json());
 
@@ -132,7 +128,7 @@ app.get('/flights', async (req, res) => {
     //  })
      res.json(new_flight_list.rows);
     console.log(new_flight_list.rows);
-  } catch (err) { console.log(err.message); }
+  } catch (err) { res.json("Error! Check your input!");}
 });
 
 app.post('/flights', async (req, res) => {
@@ -220,12 +216,16 @@ app.post('/flights', async (req, res) => {
       ` + queryCust + `
         COMMIT;`;
     const newPayment = await pool.query(paymentPostString);
+
     fs.writeFile('Transaction.sql', paymentPostString, (err) => {
       if (err) throw err;
     })
+
     console.log(newPayment.rows);
+    res.json("Success!");
+
   } catch (err) {
-    console.log(err.message, err.lineNumber);
+    res.json("Error! Check your input!");
   }
 });
 
@@ -238,7 +238,7 @@ app.post('/reset', async (req, res) => {
   }
   catch (err) {
     res.json("Database failed to be reset.");
-    console.log(err.message);
+    console.log(err.toString());
   }
 
 });
@@ -255,7 +255,7 @@ app.delete('/flights/:fullName', async (req, res) => {
     `;
     const deleteCustomer = await pool.query(deleteCustomerString);
     res.json(`${fullName} was deleted!`);
-  } catch (err) { console.log(err.message, err.lineNumber); }
+  } catch (err) { res.json("Error! Check your input!");}
 });
 
 app.get('/checkin/list', async (req, res) => {
@@ -285,7 +285,7 @@ app.get('/checkin/list', async (req, res) => {
       console.log('ticket search result:', boarding_list.rows);
       res.json(boarding_list.rows);
     }
-  } catch (err) {console.log(err.message);}
+  } catch (err) {res.json("Error! Check your input!");}
 });
 
 app.post('/checkin', async (req, res) => {
@@ -295,6 +295,8 @@ app.post('/checkin', async (req, res) => {
     const boarding_no = generate_boarding_no();
     const flight_id = req.param('flight_id');
     const seat_no = req.param('seat_no');
+
+
 
     const queryStr = `
     BEGIN;
@@ -318,8 +320,22 @@ app.post('/checkin', async (req, res) => {
           );
     COMMIT;`;
     const passenger_query = await pool.query(queryStr);
+
+    const querystr2 = `
+    SELECT
+      ticket_no, 
+      flight_id, 
+      boarding_no, 
+      seat_no
+    FROM boarding_passes
+    WHERE ticket_no = '` + ticket_id + `'
+    ;`;
+
+    const query_result = await pool.query(querystr2);
+    console.log('display boarding stuff:', query_result.rows)
+    res.json(query_result.rows);
   }
-  catch (err) {console.log(err.message);}
+  catch (err) {res.json("Error! Check your input!");}
 })
 
 app.listen(5000, () => {
@@ -389,7 +405,6 @@ function generate_passenger_id() {
   return passenger_id_new;
 }
 
-<<<<<<< HEAD
 function generate_seat_no()
 {
   var seat_no_new = getRandomInt(999);
@@ -403,29 +418,10 @@ function generate_seat_no()
     // });
 
     if (seat_no.rows === undefined){ return seat_no_new;}
-
-=======
-function generate_seat_no() {
-  var seat_no_new = "";
-  var seat_letter = getRandomArbitrary(41, 60);
-  var seat_num = getRandomInt(99);
-  seat_no_new = String.fromCharCode(seat_letter) + seat_num;
-
-  try {
-    let generateSeatStr = 'SELECT seat_no FROM boarding_passes;';
-    const seat_nos = pool.query(generateSeatStr)
-    fs.appendFile('Query.sql', generateSeatStr, function (err) {
-      if (err) throw err;
-    });
->>>>>>> 4e606adf88a69e773965e72c1fb178d54e5d0512
     for (i = 0; i < seat_nos.rows.length; i++) {
       var temp_json = JSON.parse(seat_nos.rows[i]);
       if (temp_json.seat_no === seat_no_new) {
         var seat_no_new = "";
-<<<<<<< HEAD
-=======
-        var seat_letter = getRandomArbitrary(61 - 80);
->>>>>>> 4e606adf88a69e773965e72c1fb178d54e5d0512
         var seat_num = getRandomInt(99);
         seat_no_new = seat_num;
       }
@@ -440,18 +436,11 @@ function generate_boarding_no() {
   try {
     let generateBoardingStr = 'SELECT boarding_no FROM boarding_passes;';
     const boarding_nos = pool.query(generateBoardingStr)
-<<<<<<< HEAD
     // fs.appendFile('Query.sql', generateBoardingStr, function (err) {
     //   if (err) throw err;
     // });
     for (i = 0; i < boarding_nos.rows.length; i++) 
     {
-=======
-    fs.appendFile('Query.sql', generateBoardingStr, function (err) {
-      if (err) throw err;
-    });
-    for (i = 0; i < boarding_nos.rows.length; i++) {
->>>>>>> 4e606adf88a69e773965e72c1fb178d54e5d0512
       var temp_json = JSON.parse(boarding_nos.rows[i]);
       if (temp_json.boarding_no === boarding_no_new) { boarding_no_new = getRandomInt(99999999); }
     }

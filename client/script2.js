@@ -8,6 +8,8 @@ var back_list_btn = document.getElementById('back_list');
 var back_luggage_btn = document.getElementById('back_luggage');
 
 let ticket_list_storage = []
+let boarding_list_storage = []
+
 let global_ticket_id = ""
 let global_flight_id = ""
 let global_seat_no = ""
@@ -21,13 +23,15 @@ back_list_btn.onclick = function() {
     container_check.classList.remove("list");
     boarding_table = document.getElementById('ticket_results');
     
-    boarding_table.innerHTML = `                      <tr>
-    <th>Flight ID</th>
-    <th>Departure Time</th>
-    <th>Arrival Time</th>
-    <th>Passenger</th>
-    <th>Seat</th>
-</tr> `;
+    boarding_table.innerHTML = `
+    <tr>
+        <th>Flight ID</th>
+        <th>Departure Time</th>
+        <th>Arrival Time</th>
+        <th>Passenger</th>
+        <th>Seat</th>
+    </tr> 
+`;
 }
 
 search_btn.onclick = function(){
@@ -51,6 +55,11 @@ async function sendLuggageCount() {
             method: "POST",
             headers: {"Content-Type": "application/json"},
         })
+        const jsonData = await response.json();
+        boarding_list_storage = jsonData;
+
+        displayBoardingPass();
+
         return false;
     } catch(err) {console.log(err.message);}
 }
@@ -96,4 +105,22 @@ const displayList = () => {
     });
 
     boarding_table.innerHTML += tableHTML;
+}
+
+const displayBoardingPass = () => {
+    const boarding_pass = document.getElementById('boardings');
+
+    let tableHTML = "";
+    if (boarding_list_storage.length === 0) { console.log('Query returned nothing');}
+    boarding_list_storage.map(d_table => {
+        tableHTML += `
+            <tr>
+                <th>${d_table.ticket_no}</th>
+                <th>${d_table.flight_id}</th>
+                <th>${d_table.boarding_no}</th>
+                <th>${d_table.seat_no}</th>
+            </tr>
+        `
+    })
+    boarding_pass.innerHTML += tableHTML;
 }

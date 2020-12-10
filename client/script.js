@@ -108,6 +108,12 @@ async function fetchPayment() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })
+        
+        const jsonData = await response.json();
+        var error_display = document.getElementById('error_display');
+
+        error_display.innerHTML = jsonData;
+
         return false;
     } catch (err) { console.log(err.message); }
     
@@ -154,7 +160,9 @@ const displayFlights = () => {
     const flight_table = document.getElementById('table_display');
 
     let tableHTML = "";
-    if (flight_info_storage.length === 0) { console.log('Query returned nothing'); }
+    if (flight_info_storage.length === 0) { 
+        flight_table.innerHTML += "Query returned nothing, make sure the airports are valid!";
+    }
     flight_info_storage.map(f_table => {
         var movie_bool = "Yes";
         var meal_bool = "Yes";
@@ -245,6 +253,8 @@ function slide_function(flight_id_input, flight_id_input_2, route_id_input) {
 back_list.onclick = function (event) {
     body.style.overflow = "hidden";
     html_obj.style.overflow = "hidden";
+    var error_display = document.getElementById('error_display');
+    error_display.innerHTML = "";
     container.classList.remove("pay");
 }
 
@@ -294,6 +304,7 @@ reset_btn.onclick= async function(){
         return false;
     } catch (err) { console.log(err.message); }
 }
+
 function generate_flight_button(){
     const flight_info = 
         ["",
