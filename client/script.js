@@ -18,6 +18,8 @@ let route_id = "";
 let movie_global = "Yes";
 let meal_global = "Yes";
 
+let flight_id_buffer = []
+
 async function fetchFlights() {
     var depature_location = document.getElementById('flying_from').value;
     var arrival_location = document.getElementById('flying_to').value;
@@ -130,24 +132,68 @@ async function loadFlights(flight_info, type) {
         const jsonData = await response.json();
 
         setFlights(jsonData);
-        if (type != "admin"){displayFlights();}
-        else {displayFlightsAdmin();}
+        displayFlights();
 
         return false;
     } catch (err) { console.log(err.message); }
+}
+
+async function loadFlightsAdmin() {
+    try
+    {
+        const response = await fetch(`http://localhost:5000/admin`);
+        const jsonData = await response.json();
+
+        flight_info_storage = jsonData;
+        displayFlightsAdmin();
+    } catch(err) {console.log(err.message);}
+}
+
+async function loadFlightInfoAdmin(flight_id) {
+    try {
+        const response = await fetch(`http://localhost:5000/admininfo/?flight_id=${flight_id}`);
+        const jsonData = await response.json();
+
+        flight_info_storage = jsonData;
+        displayFlightInfoAdmin();
+    } catch(err) { console.log(err.message);}
+}
+
+const displayFlightInfoAdmin = () => {
+    try {
+        const info_table = document.getElementById('result-display-table');
+        let tableHTML = `
+            <tr>
+                <th>Ticket #</th>
+                <th>Boarding #</th>
+                <th>Seat #</th>
+            </tr>
+        `;
+        if (flight_info_storage.length === 0) { info_table.innerHTML += "Query returned nothing";}
+        flight_info_storage.map(i_table => {
+            tableHTML += `
+                <tr>
+                    <th>${i_table.ticket_no}</th>
+                    <th>${i_table.boarding_no}</th>
+                    <th>${i_table.seat_no}</th>
+                </tr>
+            `;
+        });
+        info_table.innerHTML = tableHTML;
+    } catch(err) {console.log(err.message);}
 }
 
 const displayFlightsAdmin = () => {
     const flight_table = document.getElementById('list');
 
     let btnHTML = "";
-    if (!admin_generate)
+    if (admin_generate === false)
     {
         flight_info_storage.map(f_table => {
             btnHTML += 
-            `<button class='submit-btn'>
-                <div>${f_table.main_flight_id}</div>
-                <div>${f_table.departure_airport} TO ${f_table.arrival_airport}</div>
+            `<button class='submit-btn' onclick='loadFlightInfoAdmin("` + f_table.flight_id + `")'>
+                <div>${f_table.flight_id}</div>
+                <div>${f_table.departure_airport} → ${f_table.arrival_airport}</div>
             </button>
             `
         });
@@ -218,6 +264,8 @@ const displayCart = () => {
     }
 }
 
+
+
 var container = document.getElementById('container_slide');
 var next = document.getElementById('check_flights_btn');
 var prev = document.getElementById('flight_back_btn');
@@ -282,6 +330,7 @@ admin_btn.onclick = function(){
     {
         admin_pass = userinput;
         generate_flight_button();
+        loadFlightsAdmin();
         container.classList.add("admin");
     }
 }
@@ -304,6 +353,9 @@ reset_btn.onclick= async function(){
         return false;
     } catch (err) { console.log(err.message); }
 }
+
+
+
 
 function generate_flight_button(){
     const flight_info = 

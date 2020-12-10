@@ -52,21 +52,10 @@
 <div class="container_slide" id='container_slide'>
 	<div id="booking" class="section">
 
-		<form action="/client/checkinweb.html" method="get">
-			<input type="submit" value="check in"/>
-		</form>
-
 		<div class="section-center">
 			<div class="container">
 				<div class="row">
 					<div id="buttoncontainer">
-						<div id="admincontainer">
-							<input type="text" id="loginform"><button id="submit-admin-btn">Admin</button>
-						</div>
-						<div id="sql-statment-container"> 
-							<button id="sql-btn"> SQL Script </button>
-						</div>
-
 					</div>
 					<div class="booking-form" id='booking_block'>
 						<div class="form-header">
@@ -164,6 +153,16 @@
 							<div class="form-btn">
 								<button class="submit-btn" id = 'check_flights_btn'>Check availability</button>
 							</div>
+							
+		<div id="admincontainer">
+			<input type="text" id="loginform"><button id="submit-admin-btn">Admin</button>
+		</div>
+		<div id="sql-statment-container"> 
+			<button id="sql-btn"> SQL Script </button>
+		</div>
+		<form action="/client/checkinweb.html" method="POST">
+			<input type="submit" value="check in"/>
+		</form>
 						</form>
 					</div>
 				</div>
@@ -288,6 +287,7 @@
 			  </div>
 	
 			  <div id='result-display'>
+				  <table id='result-display-table'></table>
 			  </div>
 			</div>
 		  <div id='bottom'>

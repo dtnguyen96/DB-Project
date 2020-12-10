@@ -229,6 +229,39 @@ app.post('/flights', async (req, res) => {
   }
 });
 
+app.get('/admin', async (req, res) => {
+  try
+  {
+    const query_str = `
+    SELECT
+      flight_id,
+      departure_airport,
+      arrival_airport,
+      status
+    FROM flights
+    ORDER BY flight_id;      
+    `; 
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows);
+  } catch (err) {console.log(err.message);}
+});
+
+app.get('/admininfo', async (req, res) => {
+  try {
+    const flight_id = req.param('flight_id');
+    const query_str = `
+      SELECT
+        ticket_no,
+        boarding_no,
+        seat_no
+      FROM boarding_passes
+      WHERE flight_id = '` + flight_id + `';
+    `;
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows);
+  } catch(err) {console.log(err.message);}
+});
 
 app.post('/reset', async (req, res) => {
   try {
