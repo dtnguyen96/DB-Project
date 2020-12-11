@@ -222,7 +222,7 @@ app.post('/flights', async (req, res) => {
     // })
 
     console.log(newPayment.rows);
-    res.json(ticket_no);
+    res.json([ticket_no, cust_id]);
 
   } catch (err) {
     res.json("Error! Check your input!");
@@ -430,6 +430,28 @@ app.post('/checkin', async (req, res) => {
   catch (err) {res.json("Error! Check your input!");}
 })
 
+app.get('/findCustomer'), async (req, res) => {
+  try{
+    const cust_id = req.param('cust_id');
+    const query_str = `
+      SELECT 
+        customer_id,
+        customer_name,
+        customer_telephone,
+        customer_email,
+        book_ref,
+        family_couple_group,
+        card_number,
+        route_id
+      FROM customer
+      WHERE customer_id = '` + cust_id + `';
+    `;
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+}
+
 app.post('/refundCustomer', async (req, res) => {
   try {
     var cust_id = req.param('cust_id');
@@ -457,6 +479,20 @@ app.post('/refundCustomer', async (req, res) => {
         );
 
       DELETE FROM a7i743.tickets
+      WHERE book_ref = '` + book_ref + `';
+
+      DELETE FROM a7i743.payment
+      WHERE card_number IN
+            (
+              SELECT card_number
+              FROM a7i743.customer
+              WHERE book_ref = '` + book_ref + `'
+            );
+      
+      DELETE FROM a7i743.customer
+      WHERE book_ref = '` + book_ref + `';
+      
+      DELETE FROM a7i743.bookings
       WHERE book_ref = '` + book_ref + `';
 
       COMMIT;

@@ -116,7 +116,7 @@ async function fetchPayment() {
 
         console.log(jsonData);
 
-        error_display.innerHTML = `Your ticket # is ${jsonData}, please save it!`;
+        error_display.innerHTML = `Your ticket # is ${jsonData[0]} and your customer id is ${jsonData[1]}, please save it!`;
 
         return false;
     } catch (err) { console.log(err.message); }

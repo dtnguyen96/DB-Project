@@ -23,3 +23,4 @@ var refund_btn = document.getElementById('refund_cust_btn');
 refund_btn.onclick = function() {
     refundCustomer();
 }
+
