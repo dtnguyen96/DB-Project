@@ -1,3 +1,6 @@
+MAKE SURE YOU GO TO THE ADMIN PAGE AND RESET THE DATABASE!!!
+PASSWORD FOR ADMIN PAGE IS 123
+
 ER Diagram: https://imgur.com/a/CdfWExc
 VIDEO: https://drive.google.com/file/d/1CmkxzkQ2ikm8rQifW2R8U-GOp3RqBsx1/view
 
