@@ -1,9 +1,3 @@
-Neriyah Butler
-1592215BN
-
-Christian Nguyen
-1659769ND
-
 ER Diagram: https://imgur.com/a/CdfWExc
 VIDEO: https://drive.google.com/file/d/1CmkxzkQ2ikm8rQifW2R8U-GOp3RqBsx1/view
 
