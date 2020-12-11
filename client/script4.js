@@ -1,7 +1,17 @@
 async function searchCustomer() {
     try{
-        var cust_id = document.getElementById('cust-input').value;
-        const response = await fetch(`http://localhost:5000/findCustomer/?cust_id=${cust_id}`);
+        var customer_id = document.getElementById('cust-input').value;
+        const response = await fetch(`http://localhost:5000/cust_search/?cust_id=${customer_id}`);
+    const jsonData = await response.json();
+
+    displayCustomer(jsonData);
+    } catch(err) {console.log(err.message);}
+}
+
+async function searchFlight() {
+    try{
+        var flight_id = document.getElementById('flight-input').value;
+        const response = await fetch(`http://localhost:5000/flight_search/?flight_id=${flight_id}`);
     const jsonData = await response.json();
 
     displayCustomer(jsonData);
@@ -14,6 +24,17 @@ function displayCustomer(data) {
         let tableHTML = "";
         data.map(c_table => {
             tableHTML += `
+                <tr>
+                    <th>Customer Id</th>
+                    <th>Customer Name</th>
+                    <th>Customer Telephone</th>
+                    <th>Customer Email</th>
+                    <th>Book Ref</th>
+                    <th>Family/Couple/Group</th>
+                    <th>Card #</th>
+                    <th>Route Id</th>
+                </tr>
+                <tr></tr>
                 <tr>
                     <th>${c_table.customer_id}</th>
                     <th>${c_table.customer_name}</th>

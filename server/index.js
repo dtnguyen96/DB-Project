@@ -279,6 +279,51 @@ app.get('/displaybookings', async (req, res) => {
   } catch(err) {console.log(err.message);}
 })
 
+app.get('/cust_search', async (req, res) => {
+  try{
+    const cust_id = req.param('cust_id');
+    const query_str = `
+      SELECT 
+        customer_id,
+        customer_name,
+        customer_telephone,
+        customer_email,
+        book_ref,
+        family_couple_group,
+        card_number,
+        route_id
+      FROM a7i743.customer
+      WHERE customer_id = '` + cust_id + `';
+    `;
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+})
+
+// app.get('/flight_search', async (req, res) => {
+//   try{
+//     const flight_id = req.param('flight_id');
+//     const query_str = `
+//       SELECT 
+//         customer_id,
+//         customer_name,
+//         customer_telephone,
+//         customer_email,
+//         book_ref,
+//         family_couple_group,
+//         card_number,
+//         route_id
+//       FROM a7i743.customer
+//       WHERE customer_id = '` + flight_id + `';
+//     `;
+
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+})
+
 app.post('/reset', async (req, res) => {
   try {
     console.log('Reseting...');
@@ -429,28 +474,6 @@ app.post('/checkin', async (req, res) => {
   }
   catch (err) {res.json("Error! Check your input!");}
 })
-
-app.get('/findCustomer'), async (req, res) => {
-  try{
-    const cust_id = req.param('cust_id');
-    const query_str = `
-      SELECT 
-        customer_id,
-        customer_name,
-        customer_telephone,
-        customer_email,
-        book_ref,
-        family_couple_group,
-        card_number,
-        route_id
-      FROM customer
-      WHERE customer_id = '` + cust_id + `';
-    `;
-
-    const query_result = await pool.query(query_str);
-    res.json(query_result.rows); 
-  } catch(err) {console.log(err.message);}
-}
 
 app.post('/refundCustomer', async (req, res) => {
   try {

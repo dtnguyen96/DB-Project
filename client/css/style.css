@@ -701,3 +701,7 @@ div#inquiries-dashb {
     border: 1px solid transparent;
     border-radius: 4px;
 }
+
+#inquiries-display-table {
+	width: 100%;
+}
