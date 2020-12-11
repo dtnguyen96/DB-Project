@@ -301,23 +301,75 @@ app.get('/cust_search', async (req, res) => {
   } catch(err) {console.log(err.message);}
 })
 
-// app.get('/flight_search', async (req, res) => {
-//   try{
-//     const flight_id = req.param('flight_id');
-//     const query_str = `
-//       SELECT 
-//         customer_id,
-//         customer_name,
-//         customer_telephone,
-//         customer_email,
-//         book_ref,
-//         family_couple_group,
-//         card_number,
-//         route_id
-//       FROM a7i743.customer
-//       WHERE customer_id = '` + flight_id + `';
-//     `;
+app.get('/flight_search', async (req, res) => {
+  try{
+    const flight_id = req.param('flight_id');
+    const query_str = `
+      SELECT 
+        flight_id,
+        flight_no,
+        scheduled_departure,
+        scheduled_arrival,
+        status,
+        departure_airport,
+        arrival_airport
+      FROM a7i743.flights
+      WHERE flight_id = '` + flight_id + `';
+    `;
 
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+})
+
+app.get('/booking_search', async (req, res) => {
+  try{
+    const book_ref = req.param('book_ref');
+    const query_str = `
+      SELECT
+        book_ref,
+        book_date,
+        total_amount
+      FROM a7i743.bookings
+      WHERE book_ref = '` + book_ref + `';
+    `;
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+})
+
+app.get('/ticket_search', async (req, res) => {
+  try{
+    const ticket_no = req.param('ticket_no');
+    const query_str = `
+      SELECT
+        ticket_no,
+        book_ref,
+        passenger_id,
+        passenger_name,
+        seat_no
+      FROM a7i743.tickets
+      WHERE ticket_no = '` + ticket_no + `';
+    `;
+
+    const query_result = await pool.query(query_str);
+    res.json(query_result.rows); 
+  } catch(err) {console.log(err.message);}
+})
+
+app.get('/boarding_search', async (req, res) => {
+  try{
+    const boarding_no = req.param('boarding_no');
+    const query_str = `
+      SELECT
+        ticket_no,
+        flight_id,
+        boarding_no,
+        seat_no
+      FROM a7i743.boarding_passes
+      WHERE boarding_no = '` + boarding_no + `';
+    `;
 
     const query_result = await pool.query(query_str);
     res.json(query_result.rows); 
