@@ -4,11 +4,12 @@
 // );
 // only two attributes in the table: todo_id and description
 const Pool = require('pg').Pool;
+const input = require('./password.json');
 
 const pool = new Pool({
   host: 'code.cs.uh.edu',
-  user: 'cosc0130',
-  password: '1592215BN',
+  user: input.user,
+  password: input.password,
   port: 5432,
   database: 'COSC3380'
 });
