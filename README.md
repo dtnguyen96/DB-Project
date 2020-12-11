@@ -1,7 +1,7 @@
 Neriyah Butler
 1592215BN
 
-Christian Nguyen
+Dung Nguyen
 1659769ND
 
 ER Diagram: https://imgur.com/a/CdfWExc
