@@ -201,6 +201,7 @@ app.post('/flights', async (req, res) => {
         queryCust += `UPDATE a7i743.flights SET seats_available = seats_available - 1, ` + seat_type + ` = ` + seat_type + ` - 1, seats_booked = seats_booked + 1 WHERE flight_id = ` + flight_id_2 + `;`;
       }
     }
+    sql_str+= queryCust;
 
     let paymentPostString = `
     BEGIN;
@@ -216,7 +217,7 @@ app.post('/flights', async (req, res) => {
       ` + queryCust + `
         COMMIT;`;
     const newPayment = await pool.query(paymentPostString);
-
+    sql_str+= paymentPostString;
     // fs.writeFile('Transaction.sql', paymentPostString, (err) => {
     //   if (err) throw err;
     // })
@@ -242,6 +243,7 @@ app.get('/admin', async (req, res) => {
     ORDER BY flight_id;      
     `; 
     const query_result = await pool.query(query_str);
+    sql_str+= query_str;
     res.json(query_result.rows);
   } catch (err) {console.log(err.message);}
 });
@@ -259,6 +261,7 @@ app.get('/admininfo', async (req, res) => {
     `;
 
     const query_result = await pool.query(query_str);
+    sql_str+= query_str;
     res.json(query_result.rows);
   } catch(err) {console.log(err.message);}
 });
@@ -274,6 +277,7 @@ app.get('/displaybookings', async (req, res) => {
     `;
 
     const query_result = await pool.query(query_str);
+    sql_str+= query_str;
     console.log(query_result.rows);
     res.json(query_result.rows);
   } catch(err) {console.log(err.message);}
@@ -297,6 +301,7 @@ app.get('/cust_search', async (req, res) => {
     `;
 
     const query_result = await pool.query(query_str);
+    sql_str+= query_str;
     res.json(query_result.rows); 
   } catch(err) {console.log(err.message);}
 })
@@ -371,10 +376,10 @@ app.get('/boarding_search', async (req, res) => {
       WHERE boarding_no = '` + boarding_no + `';
     `;
 
-    const query_result = await pool.query(query_str);
-    res.json(query_result.rows); 
-  } catch(err) {console.log(err.message);}
-})
+//     const query_result = await pool.query(query_str);
+//     res.json(query_result.rows); 
+//   } catch(err) {console.log(err.message);}
+// })
 
 app.post('/reset', async (req, res) => {
   try {
@@ -400,6 +405,7 @@ app.delete('/flights/:fullName', async (req, res) => {
             WHERE a7i743.tickets.passenger_name = ${fullName})
     `;
     const deleteCustomer = await pool.query(deleteCustomerString);
+    sql_str+= deleteCustomerString;
     res.json(`${fullName} was deleted!`);
   } catch (err) { res.json("Error! Check your input!");}
 });
@@ -443,6 +449,7 @@ app.delete('/deleteboarding', async (req, res) => {
       WHERE book_ref = '` + book_ref + `';
     COMMIT;`;
     const deleteBooking = await pool.query(query_str);
+    sql_str+= query_str;
     res.json('Refund has been processed!');
   } catch(err) {console.log(err.message);}
 })
@@ -471,12 +478,18 @@ app.get('/checkin/list', async (req, res) => {
           ORDER BY flight_id;
       `;
       const boarding_list = await pool.query(query_str);
+      sql_str+= query_str;
       console.log('ticket search result:', boarding_list.rows);
       res.json(boarding_list.rows);
     }
   } catch (err) {res.json("Error! Check your input!");}
 });
-
+app.get('/getSql', async (req, res) => {
+  try {
+      res.json(sql_str);
+    }
+   catch (err) {res.json("Error! Check your input!");}
+  });
 app.post('/checkin', async (req, res) => {
   try {
     const ticket_id = req.param('ticket_id');
@@ -508,6 +521,7 @@ app.post('/checkin', async (req, res) => {
             + seat_no + `'
           );
     COMMIT;`;
+    sql_str+= queryStr;
     const passenger_query = await pool.query(queryStr);
 
     const querystr2 = `
@@ -521,6 +535,7 @@ app.post('/checkin', async (req, res) => {
     ;`;
 
     const query_result = await pool.query(querystr2);
+    sql_str+= querystr2;
     console.log('display boarding stuff:', query_result.rows)
     res.json(query_result.rows);
   }
@@ -573,6 +588,7 @@ app.post('/refundCustomer', async (req, res) => {
       COMMIT;
     `;
     const query_result = await pool.query(query_str);
+    sql_str+= query_str;
     res.json("Refund has successfully been processed!");
   } catch(err) {
     console.log(err.message);
@@ -694,7 +710,7 @@ function getRandomInt(max) {
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
 }
-
+console.log(sql_str);
 var resetStr = `
 SET SCHEMA 'a7i743';
 
