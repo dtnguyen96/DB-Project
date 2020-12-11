@@ -5,6 +5,7 @@ Christian Nguyen
 1659769ND
 
 ER Diagram: https://imgur.com/a/CdfWExc
+VIDEO: https://drive.google.com/file/d/1CmkxzkQ2ikm8rQifW2R8U-GOp3RqBsx1/view
 
 FOR PUTTING IN YOUR LOGIN, GO TO THE PASSWORD.JSON FILE IN THE SERVER FOLDER!!
 REPLACE THE INFORMATION ALREADY THERE WITH YOUR OWN STUFF!!
